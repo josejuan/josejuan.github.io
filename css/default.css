@@ -1,13 +1,12 @@
 @import "base.css";
 
-/* fonts */
 @import url(http://fonts.googleapis.com/css?family=Ubuntu);
 @import url(http://fonts.googleapis.com/css?family=Open+Sans);
 
 body {
     color: black;
     font-size: 16px;
-    margin: 40px auto 0px auto;
+    margin: 0px auto 0px auto;
 }
 
 div#header {
@@ -72,7 +71,6 @@ div#footer {
     text-align: center;
     height: 4em;
     background-color: #323232;
-    position: absolute;
     bottom: 0;
     width: 100%;
     overflow: hidden;
