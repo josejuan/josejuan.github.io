@@ -19,8 +19,8 @@ urna vehicula ante, at facilisis dolor odio at lorem. Morbi vehicula euismod
 urna, et imperdiet urna ornare vitae.
 
 ~~~~~{.haskell}
-    main :: IO ()
-    main = putStrLn "Hello World!"
+main :: IO ()
+main = putStrLn "Hello World!"
 ~~~~~
 
 Sed tincidunt sollicitudin ultrices. In hac habitasse platea dictumst. Morbi
