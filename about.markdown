@@ -2,7 +2,7 @@
 title: Acerca de josejuan <s>blog</s>
 ---
 
-<img src="/images/logo.gif" style="float: right; margin: 10px;" />
+<p style="float: right; margin: 10px; font-size: 0.8em; color: gray; text-align: center"><img src="/images/logo.gif" /><br />(mi careto en 3D año 2000 con una cutrecam a 320x240)</p>
 
 Cajón de sastre en el que dejar algunos botones...
 
