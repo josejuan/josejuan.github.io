@@ -11,6 +11,7 @@ tags
 cabal.sandbox.config
 .cabal-sandbox/
 .stack-work
+notes.txt
 
 # Ignore test builds.
 tests/Main
