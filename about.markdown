@@ -1,17 +1,15 @@
 ---
-title: About
+title: Acerca de josejuan <s>blog</s>
 ---
-Nullam imperdiet sodales orci vitae molestie. Nunc quam orci, pharetra a
-rhoncus vitae, eleifend id felis. Suspendisse potenti. Etiam vitae urna orci.
-Quisque pellentesque dignissim felis, egestas tempus urna luctus vitae. In hac
-habitasse platea dictumst. Morbi fringilla mattis odio, et mattis tellus
-accumsan vitae.
 
-1. Amamus Unicode 碁
-2. Interdum nex magna.
+<img src="/images/logo.gif" style="float: right; margin: 10px;" />
 
-Vivamus eget mauris sit amet nulla laoreet lobortis. Nulla in diam elementum
-risus convallis commodo. Cras vehicula varius dui vitae facilisis. Proin
-elementum libero eget leo aliquet quis euismod orci vestibulum. Duis rhoncus
-lorem consequat tellus vestibulum aliquam. Quisque orci orci, malesuada porta
-blandit et, interdum nec magna.
+Cajón de sastre en el que dejar algunos botones...
+
+* <a href="http://jose-juan.computer-mind.com/">Cosas viejas desde 1997 hasta 2010</a>
+* <a href="https://www.genbetadev.com/autor/josejuan">Algunos post escritos en Genbetadev</a>
+* <a href="http://www.solveet.com/josejuan">Algunas soluciones a desafíos varios en Solveet</a>
+* <a href="https://twitter.com/__josejuan__">Yo en Twitter</a>
+* <a href="http://stackoverflow.com/users/1540749/josejuan">Yo en Stackoverflow</a>
+* <a href="https://github.com/josejuan">Poca cosa en Github</a>
+
