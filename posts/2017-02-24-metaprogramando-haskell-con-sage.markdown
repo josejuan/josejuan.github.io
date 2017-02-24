@@ -24,7 +24,7 @@ Y ya está, podemos resolver el cubo de _Rubik_. Por ejemplo:
 Just "bLulb"
 ```
 
-Claro que he hecho algo de trampa, ¿dónde está la definición de **Cubo**?, ¿y **rots**?, ¿y los movimientos **rot_B**, **rot_L**, ...? Han sido generados usando <a href="http://doc.sagemath.org/html/en/index.html">Sage</a> que tiene pinta de ser una librería matemática en _Python_ (ni idea, andaba buscando ya construido el grupo generador y me salió ésta) y que permite calcular las rotaciones. Rápidamente decir que si rotamos una cara (digamos **U**) entonces _"contrarotarla"_ es rotarla 3 veces (hacer **UUU**). Y que obtenemos los índices de las caras (1, 2, ... 48 se excluyen los ejes porque permanecen fijos) y poco más.
+Claro que he hecho algo de trampa, ¿dónde está la definición de **Cubo**?, ¿y **rots**?, ¿y los movimientos **rot_B**, **rot_L**, ...? Han sido generados usando <a href="http://doc.sagemath.org/html/en/index.html">Sage</a> que tiene pinta de ser una librería matemática en _Python_ (ni idea, andaba buscando ya construido el grupo generador y me salió ésta) y que permite calcular las rotaciones. Rápidamente decir que si rotamos una cara (digamos **U**) entonces _"contrarotarla"_ es rotarla 3 veces (hacer **UUU**). Y que obtenemos los índices de las caras (1, 2, ... 48; se excluyen los ejes porque permanecen fijos) y poco más.
 
 Veamos el código para generar las rotaciones:
 
