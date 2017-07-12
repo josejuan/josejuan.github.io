@@ -20,3 +20,4 @@ pre.sourceCode span.al { color: red; font-weight: bold; }
 pre.sourceCode span.fu { color: #06287e; }
 pre.sourceCode span.re { }
 pre.sourceCode span.er { color: red; font-weight: bold; }
+p > code { color: darkblue; font-style: italic; font-size: 0.8em; background-color: #f0f0f0; }
