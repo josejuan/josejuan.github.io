@@ -143,3 +143,20 @@ Ahora ya podemos obtener la secuencia de cualquier número **astronómico** en t
 ```
 
 Y ésto es todo!
+
+**NOTA**, si _"limpiamos"_ las ideas anteriores, podemos sacar una versión más compacta:
+
+```haskell
+praga n = let k = [1,2,3,4,5,1,2,3,4,1,2,3,4,5,1] !! fromIntegral ((n - 1) `mod` 15)
+              j = (2 * n * k - 2 * n - k * k + k) `div` 2
+              w = [(0,(0,0,0)),(1,(23432,14,1)),(3,(3432,12,12)),(6,(432,9,123)),(10,(32,5,1234)),(13,(2,2,12343))]
+              Just (h, s, _) = lookup (j `mod` 15) w
+              (d, r) = (n - s) `divMod` 15
+              Just (_, _, t) = lookup r w
+          in  (h, d, t)
+```
+
+Los cambios son:
+1. en lugar de iterar para sacar aquel `m` que cierra grupo, podemos usar directamente los restos módulo 15.
+2. en lugar de sumar esos (como mucho 5) números, calculamos `j` directamente.
+3. en lugar de usar `case`, usamos `lookup` y metemos en un único `w` los prefijos y sufijos.
