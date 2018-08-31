@@ -111,6 +111,15 @@ praga n <span class="fu">=</span> <span class="kw">let</span> (h, s) <span class
 <span class="dv">68321721776855864223224899695250789833925358950691281156863965406955685466527938842773438</span>
 <span class="dv">2</span>,<span class="dv">12343</span>)</code></pre></div>
 <p>Y ésto es todo!</p>
+<p><strong>NOTA</strong>, si <em>“limpiamos”</em> las ideas anteriores, podemos sacar una versión más compacta:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">praga n <span class="fu">=</span> <span class="kw">let</span> k <span class="fu">=</span> [<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>,<span class="dv">1</span>] <span class="fu">!!</span> fromIntegral ((n <span class="fu">-</span> <span class="dv">1</span>) <span class="ot">`mod`</span> <span class="dv">15</span>)
+              j <span class="fu">=</span> (<span class="dv">2</span> <span class="fu">*</span> n <span class="fu">*</span> k <span class="fu">-</span> <span class="dv">2</span> <span class="fu">*</span> n <span class="fu">-</span> k <span class="fu">*</span> k <span class="fu">+</span> k) <span class="ot">`div`</span> <span class="dv">2</span>
+              w <span class="fu">=</span> [(<span class="dv">0</span>,(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>)),(<span class="dv">1</span>,(<span class="dv">23432</span>,<span class="dv">14</span>,<span class="dv">1</span>)),(<span class="dv">3</span>,(<span class="dv">3432</span>,<span class="dv">12</span>,<span class="dv">12</span>)),(<span class="dv">6</span>,(<span class="dv">432</span>,<span class="dv">9</span>,<span class="dv">123</span>)),(<span class="dv">10</span>,(<span class="dv">32</span>,<span class="dv">5</span>,<span class="dv">1234</span>)),(<span class="dv">13</span>,(<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">12343</span>))]
+              <span class="dt">Just</span> (h, s, _) <span class="fu">=</span> lookup (j <span class="ot">`mod`</span> <span class="dv">15</span>) w
+              (d, r) <span class="fu">=</span> (n <span class="fu">-</span> s) <span class="ot">`divMod`</span> <span class="dv">15</span>
+              <span class="dt">Just</span> (_, _, t) <span class="fu">=</span> lookup r w
+          <span class="kw">in</span>  (h, d, t)</code></pre></div>
+<p>Los cambios son: 1. en lugar de iterar para sacar aquel <code>m</code> que cierra grupo, podemos usar directamente los restos módulo 15. 2. en lugar de sumar esos (como mucho 5) números, calculamos <code>j</code> directamente. 3. en lugar de usar <code>case</code>, usamos <code>lookup</code> y metemos en un único <code>w</code> los prefijos y sufijos.</p>
 
 <div id="disqus_thread"></div>
 <script>
