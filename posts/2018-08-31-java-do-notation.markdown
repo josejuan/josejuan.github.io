@@ -4,7 +4,7 @@ author: josejuan
 tags: languages
 ---
 
-**ADVERTENCIA**, éste post asume se conoce qué son y para que sirven las mónadas, en otro caso aunque entiendas todo lo que se expone, seguramente no entenderás su utilidad.
+**ADVERTENCIA**, este post asume se conoce qué son y para que sirven las mónadas, en otro caso aunque entiendas todo lo que se expone, seguramente no entenderás su utilidad.
 
 ## Java 8 Streams
 
@@ -253,9 +253,9 @@ Para introducir de forma adecuada la _do notation_ en _Java_ hemos tenido que mo
 
 **Desafortunadamente** _Java_ no posee una forma estándar de modificar la semántica, pero he aquí unos ~~insconscientes~~ intrépidos **lombokianos** que te permiten precisamente eso que necesitamos, modificar la semántica del lenguaje.
 
-Para ello éstos ~~locos~~ valientes hacen todo tipo de ~~guarrerías~~ subterfugios.
+Para ello estos ~~locos~~ valientes hacen todo tipo de ~~guarrerías~~ subterfugios.
 
-Así, borrachos de insensatez, hemos _forkeado_ https://github.com/josejuan/lomboki, metido de lleno en las procelosas aguas de _javac_ y amigos y, tras salir del laberinto del Fauno, obtenido los tres ansiados objetos mágicos:
+Así, borrachos de insensatez, hemos _forkeado_ [lombok](https://github.com/josejuan/lombok), metido de lleno en las procelosas aguas de _javac_ y amigos y, tras salir del laberinto del Fauno, obtenido los tres ansiados objetos mágicos:
 
 1. _"El bueno"_ [`@bind`](https://github.com/josejuan/lombok/blob/master/src/core/lombok/bind.java)
 1. _"El malo"_ [`@BindTo`](https://github.com/josejuan/lombok/blob/master/src/core/lombok/BindTo.java)
@@ -265,6 +265,6 @@ Salvo que si quieres _hackear_ `lombok` vas a tener que ser un poco cabezón, ex
 
 ## Conclusión
 
-El esquema indicado puede aplicarse a diversas mónadas y estructuras como los builders (un builder es un caso muy particular de mónada o más bien, con mónadas puede implementarse un builder). Además una misma mónada (clase) puede definir diferentes enlaces para diferentes tipos de _"bindeo"_. Tristemente, será complicado (¡ojalá!) ver composiciones similares `@bind` en éstos lenguajes.
+El esquema indicado puede aplicarse a diversas mónadas y estructuras como los builders (un builder es un caso muy particular de mónada o más bien, con mónadas puede implementarse un builder). Además una misma mónada (clase) puede definir diferentes enlaces para diferentes tipos de _"bindeo"_. Tristemente, será complicado (¡ojalá!) ver composiciones similares `@bind` en estos lenguajes.
 
 En cuanto a **lombok** me parece un banco muy interesante para realizar pruebas, pero es muy cuestionable su uso en códigos que esperen mantenerse durante un plazo indeterminado y/o cuyos entornos de despliegue puedan sufrir cambios.
