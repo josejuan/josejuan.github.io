@@ -245,7 +245,7 @@ at 2,4: I don't know the imaginary numbers!
 
 Y se observa que por un lado la complejidad es lineal y el consumo de memoria constante:
 
-<img src="../images/do-notation-example-result.png" />
+<img src="../images/do-notation-example-result2.png" />
 
 ## javac, AST y demás pócimas arcanas
 
