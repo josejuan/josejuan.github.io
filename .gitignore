@@ -11,7 +11,6 @@ tags
 cabal.sandbox.config
 .cabal-sandbox/
 .stack-work
-notes.txt
 
 # Ignore test builds.
 tests/Main
@@ -24,5 +23,3 @@ web/_cache
 web/_site
 web/site
 web/reference
-
-fresquera

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>josejuan - Teoría del desarrollo del software; detección de bugs</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+    </head>
+    <body>
+        <div id="header">
+            <div id="logo">
+              <a href="../">josejuan <s>blog</s></a>
+            </div>
+            <div id="navigation">
+                <a href="../">Home</a>
+                <a href="../about.html">Acerca de</a>
+                <a href="../archive.html">Archivo</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <h1>Teoría del desarrollo del software; detección de bugs</h1>
+
+            <div class="info">
+    Posted on December 14, 2017
+    
+        by josejuan
+    
+</div>
+
+<p>De forma recurrente me sorprendo por el (aparentemente) poco interés en aplicar técnicas <em>“ancestrales”</em> al desarrollo del software que en otras áreas han dado tan buenos resultados. La estadística y el cálculo de probabilidades (desde el genial <em>conde de Buffon</em>) se aplica con enorme éxito en sistemas complejos de analizar de forma determinista. Desde hace bastante tiempo me pregunto por qué no veo cosas como <em>“Si la P d q cualquier código tuyo tenga bugs es dl 50% y la d q tu test los descubra es dl 50%, tu código es buggy en ~38% pues P≈B(1-D+DB)”</em> <a href="https://twitter.com/__josejuan__/status/648138545660620800">🐦 </a>.</p>
+<p>En el desarrollo de <em>software</em> sin duda hay muchas <strong>opiniones</strong>, pero no muchas técnicas contrastadas con una sólida base teórica que ayuden (sobre todo a grandes equipos de desarrollo) a medir y dirigir los recursos hacia los <em>“puntos calientes”</em> de la aplicación. Ya no digamos para técnicas más sofisticadas como <em>“¿Te imaginas un lenguaje que te pidiera anotaciones (ej. de tipo) basándose en la probabilidad de bug (rojo) o de optimización (naranja)?”</em> <a href="https://twitter.com/__josejuan__/status/406050784984309760">🐦 </a>.</p>
+<p>Como son pocos y éste me ha gustado, me apetecía tenerlo traducido.</p>
+<p><strong>Título original:</strong> <a href="http://stevemcconnell.com/articles/gauging-software-readiness-with-defect-tracking/"><em>“Gauging Software Readiness With Defect Tracking”</em></a> <em>(Vol. 14, No. 3, May/June 1997)</em></p>
+<hr />
+<p>En el competitivo mercado de software comercial, las empresas de software se sienten obligadas a lanzar software en el momento en que está listo. Su tarea es traicionera, pisando la línea divisoria entre liberar software de mala calidad temprano y software de alta calidad tarde. Una buena respuesta a la pregunta <em>“¿Es el software lo suficientemente bueno para lanzarlo ahora?”</em> puede ser crítico para la supervivencia de una empresa. La respuesta a veces se basa en el instinto visceral, pero varias técnicas pueden poner este juicio sobre una base más firme.</p>
+<h2 id="densidad-de-bugs">Densidad de <em>bugs</em></h2>
+<p>Una de las maneras más fáciles de juzgar si un programa está listo para ser liberado es medir su densidad de <em>bugs</em> - el número de <em>bugs</em> por línea de código. Suponga que la primera versión de su producto, GigaTron 1.0, consistiera en 100.000 líneas de código, que usted detectó 650 <em>bugs</em> antes de la publicación del software, y que se reportaron 50 <em>bugs</em> más después de la publicación del software. Por lo tanto, el software tenía un número total de 700 <em>bugs</em>, y una densidad de <em>bugs</em> de 7 <em>bugs</em> por cada mil líneas de código (KLOC).</p>
+<p>Supongamos que GigaTron 2.0 consistió en 50.000 líneas de código adicionales, que usted detectó 400 <em>bugs</em> antes de la liberación, y otros 75 después de la liberación. La densidad total de <em>bugs</em> de esa liberación sería de 475 <em>bugs</em> totales divididos entre 50.000 nuevas líneas de código, o 9.5 <em>bugs</em> por KLOC.</p>
+<p>Ahora suponga que está tratando de decidir si GigaTron 3.0 es lo suficientemente confiable como para entregarlo. Consta de 100.000 nuevas líneas de código, y ha detectado 600 <em>bugs</em> hasta ahora, o 6 <em>bugs</em> por KLOC. A menos que tenga una buena razón para pensar que su proceso de desarrollo ha mejorado con este proyecto, su experiencia le llevará a esperar entre 7 y 10 <em>bugs</em> por KLOC. El número de <em>bugs</em> que usted debe intentar encontrar variará dependiendo del nivel de calidad que está buscando. Si desea eliminar el 95 por ciento de todos los <em>bugs</em> antes de la liberación, deberá detectar entre 650 y 950 <em>bugs</em> antes del lanzamiento. Esta técnica sugiere que el producto no está listo para su envío.</p>
+<p>Cuantos más datos de proyecto históricos tenga, más confianza tendrá en sus objetivos de densidad de <em>bugs</em> previos a la liberación. Si usted tiene datos de sólo dos proyectos y el rango es tan amplio como 7 a 10 <em>bugs</em> por KLOC, eso deja mucho espacio para un juicio experto sobre si el tercer proyecto será más parecido al primero o segundo. Pero si usted ha rastreado los datos de <em>bugs</em> para 10 proyectos y ha encontrado que su tasa promedio de <em>bugs</em> de por vida es de 7.4 <em>bugs</em> por KLOC con una desviación estándar de 0.4 <em>bugs</em>, usted puede tener confianza en esos datos.</p>
+<h2 id="agrupación-de-bugs">Agrupación de <em>bugs</em></h2>
+<p>Otra técnica sencilla de predicción de <em>bugs</em> consiste en separar los informes de <em>bugs</em> en dos grupos. Llámelos grupo A y grupo B. A continuación, realice un seguimiento de los <em>bugs</em> en estos dos grupos por separado. La distinción entre los dos grupos es arbitraria. Podría poner todos los <em>bugs</em> descubiertos los lunes, miércoles y fines de semana en el grupo A, y el resto de los <em>bugs</em> en el grupo B. O podrías dividir a su equipo de pruebas por el medio y poner la mitad de sus <em>bugs</em> reportados en un grupo, la mitad en el otro. No importa realmente cómo se haga la división, siempre y cuando ambos grupos de informes operen independientemente y ambos prueben el alcance completo del producto.</p>
+<p>Una vez que se crea una distinción entre los dos grupos, se realiza un seguimiento del número de <em>bugs</em> notificados en el grupo A, el número en el grupo B y (aquí está la parte importante) el número de <em>bugs</em> que se notifican tanto en el grupo A como en el grupo B. El número de <em>bugs</em> únicos notificados en un momento dado es:</p>
+<p><em>bugs</em><sub>Únicos</sub> = <em>bugs</em><sub>A</sub> + <em>bugs</em><sub>B</sub> - <em>bugs</em><sub>AyB</sub></p>
+<p>El número de <em>bugs</em> totales puede entonces ser aproximado por la fórmula:</p>
+<p><em>bugs</em> <sub>Total</sub> = (<em>bugs</em><sub>A</sub> * <em>bugs</em><sub>B</sub>) / <em>bugs</em><sub>AyB</sub></p>
+<p>Si el proyecto GigaTron 3.0 tiene 400 <em>bugs</em> en el grupo A, 350 <em>bugs</em> en el grupo B y 150 de los <em>bugs</em> en ambos grupos, el número de <em>bugs</em> únicos detectados sería de 400 + 350 - 150 = 600. Si el proyecto GigaTron 3.0 tiene 400 <em>bugs</em> en el grupo A, 350 <em>bugs</em> en el grupo B y 150 de los <em>bugs</em> en ambos grupos, el número de <em>bugs</em> únicos detectados sería de 400 + 350 - 150 = 600. El número aproximado de <em>bugs</em> totales sería 400 * 350 / 150 = 933. Esta técnica sugiere que quedan por detectar aproximadamente 333 <em>bugs</em> (aproximadamente un tercio de los <em>bugs</em> totales estimados); el aseguramiento de la calidad en este proyecto todavía tiene un largo camino por recorrer.</p>
+<h2 id="sembrado-de-bugs">Sembrado de <em>bugs</em></h2>
+<p>La siembra de <em>bugs</em> es una práctica en la que un grupo inserta intencionadamente <em>bugs</em> en un programa para su detección por otro grupo. La relación entre el número de <em>bugs</em> detectados y el número total de <em>bugs</em> sembrados proporciona una idea aproximada del número total de <em>bugs</em> no sembrados que se han detectado.</p>
+<p>Suponga que en GigaTron 3.0 ha introducido intencionalmente el programa con 50 errores. Para obtener el mejor efecto, los errores sembrados deben cubrir la totalidad de la funcionalidad del producto y toda la gama de severidades, desde errores de colisión hasta errores cosméticos.</p>
+<p>Suponga que en un punto del proyecto, cuando usted crea que las pruebas están casi completas, mira el informe del <em>bug</em> sembrado. Usted encuentra que se han reportado 31 <em>bugs</em> sembrados y 600 <em>bugs</em> <em>“reales”</em>. Se puede estimar el número total de <em>bugs</em> con la fórmula:</p>
+<p><em>reales</em><sub>Totales</sub> = (<em>sembrados</em><sub>Totales</sub> / <em>sembrados</em><sub>Encontrados</sub>) * <em>reales</em><sub>Encontrados</sub></p>
+<p>Esta técnica sugiere que GigaTron 3.0 tiene aproximadamente 50 / 31 * 600 = 967 <em>bugs</em> totales.</p>
+<p>Para utilizar la siembra de <em>bugs</em>, debe sembrar los <em>bugs</em> antes del comienzo de las pruebas cuya eficacia desea determinar. Si su prueba utiliza métodos manuales y no tiene una manera sistemática de cubrir el mismo campo de pruebas dos veces, usted debe sembrar <em>bugs</em> antes de que comience la prueba. Si su prueba utiliza pruebas de regresión completamente automatizadas, usted puede sembrar <em>bugs</em> virtualmente en cualquier momento para determinar la efectividad de las pruebas automatizadas.</p>
+<p>Un problema común con los programas de sembrado de <em>bugs</em> es el olvido de eliminar los <em>bugs</em> sembrados. Otro problema común es que la eliminación de los <em>bugs</em> sembrados introduce nuevos errores. Para prevenir estos problemas, asegúrese de eliminar todos los <em>bugs</em> sembrados antes de las pruebas finales del sistema y la liberación del producto. Un estándar de implementación útil para los errores sembrados es exigir que sólo se implementen añadiendo una o dos líneas de código que crean el error; este estándar garantiza que puede eliminar los errores sembrados de forma segura simplemente eliminando las líneas de código erróneas.</p>
+<h2 id="modelado-de-bugs">Modelado de <em>bugs</em></h2>
+<p>Un colega mío recientemente agregó varios cientos de líneas de código a un programa existente en una sola sesión. La primera vez que compiló el código, obtuvo una compilación limpia sin errores. Su codificación inicial parecía ser perfecta. Sin embargo, cuando intentó probar la nueva funcionalidad, descubrió que no existía. Cuando reexaminó su nuevo código, descubrió que su trabajo había sido incrustado entre un preprocesador de macros que desactivaba el nuevo código. Cuando movió el nuevo código fuera del alcance de la macro, produjo el número habitual de errores del compilador.</p>
+<p>Con los <em>bugs</em> de software, ninguna noticia suele ser mala noticia. Si el proyecto ha llegado a una etapa tardía con pocos <em>bugs</em> reportados, hay una tendencia natural a pensar: “Finalmente lo hicimos bien y creamos un programa con casi ningún <em>bug</em>” En realidad, ninguna noticia es más a menudo el resultado de pruebas insuficientes que de prácticas superlativas de desarrollo.</p>
+<p>Algunas de las herramientas más sofisticadas de estimación y control de proyectos de software contienen una funcionalidad de modelado de <em>bugs</em> que puede predecir el número de <em>bugs</em> que se espera encontrar en cada punto del proyecto. Comparando los <em>bugs</em> realmente detectados con el número pronosticado, usted puede evaluar si su proyecto se mantiene al día con la detección de <em>bugs</em> o si se queda rezagado.</p>
+<h2 id="combinaciones">Combinaciones</h2>
+<p>Evaluar las combinaciones de densidad de <em>bugs</em>, grupos de <em>bugs</em> y siembra de <em>bugs</em> le dará más confianza de la que podría tener en cualquiera de las técnicas individualmente. Examinando la densidad del <em>bug</em> solo en GigaTron 3.0 sugirió que usted debe esperar 700 a 1000 <em>bugs</em> totales, y que usted debe quitar 650 a 950 antes de la liberación del producto para alcanzar el 95 por ciento de eliminación del <em>bug</em> antes de la liberación. Si usted ha detectado 600 <em>bugs</em>, la información de densidad de <em>bugs</em> por sí sola podría llevarle a declarar el producto “casi listo para enviar”, pero el análisis de agrupación de <em>bugs</em> calcula que GigaTron 3.0 producirá aproximadamente 933 <em>bugs</em> totales. Comparando los resultados de esas dos técnicas sugiere que usted debe esperar un conteo total de <em>bugs</em> hacia el extremo superior del rango de densidad de <em>bugs</em> en lugar del extremo inferior. Debido a que la técnica de siembra de <em>bugs</em> también estima un número total de <em>bugs</em> en los 900s, GigaTron 3.0 parece ser un programa relativamente defectuoso.</p>
+<h2 id="recursos">Recursos</h2>
+<p>La literatura popular no tiene mucho que decir sobre la predicción de <em>bugs</em>. Una excepción notable es el libro de Glenford Myers de 1976, Software Reliability (Wiley). Lawrence H. Putnam y Ware Myers discuten el tema específico del modelado de <em>bugs</em> con cierta profundidad en Measures for Excellence (Yourdon Press 1992).</p>
+<h3 id="referencias">Referencias</h3>
+<ul>
+<li><a href="http://stevemcconnell.com/articles/gauging-software-readiness-with-defect-tracking/">Gauging Software Readiness With Defect Tracking</a></li>
+</ul>
+
+<div id="disqus_thread"></div>
+<script>
+(function() {
+  var d = document, s = d.createElement('script');
+  s.src = '//josejuan-github-io.disqus.com/embed.js';
+  s.setAttribute('data-timestamp', +new Date());
+  (d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');ga('create', 'UA-3981685-5', 'auto');ga('send', 'pageview');
+        </script>
+    </body>
+</html>

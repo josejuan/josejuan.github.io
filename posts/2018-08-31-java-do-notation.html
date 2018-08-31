@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>josejuan - Real Java do notation</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+    </head>
+    <body>
+        <div id="header">
+            <div id="logo">
+              <a href="../">josejuan <s>blog</s></a>
+            </div>
+            <div id="navigation">
+                <a href="../">Home</a>
+                <a href="../about.html">Acerca de</a>
+                <a href="../archive.html">Archivo</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <h1>Real Java do notation</h1>
+
+            <div class="info">
+    Posted on August 31, 2018
+    
+        by josejuan
+    
+</div>
+
+<p><strong>ADVERTENCIA</strong>, éste post asume se conoce qué son y para que sirven las mónadas, en otro caso aunque entiendas todo lo que se expone, seguramente no entenderás su utilidad.</p>
+<h2 id="java-8-streams">Java 8 Streams</h2>
+<p><em>Java 8</em> introdujo un buen número de elementos <em>funcionales</em> al lenguaje, entre ellos las mónadas <code>Optional</code> y <code>Stream</code> (con múltiples defectos, pero bueno). En <em>Java</em> son también bien conocidos los <em>“builders”</em>, básicamente objetos cuyos <em>setters</em> devuelven el resultado del seteo (normalmente la propia instancia pero no necesariamente). Ambas estructuras poseen un patrón común y es que tienden a generar un código de la forma (da igual el sentido, importa la sintáxis):</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java">...
+<span class="dt">final</span> Cosa cosa = <span class="kw">new</span> <span class="fu">Cosa</span>()
+  .<span class="fu">setColor</span>(VERDE)
+  .<span class="fu">setHandler</span>(OtraCosa::handlerPorDefecto)
+  ...
+  .<span class="fu">asReader</span>()
+  .<span class="fu">build</span>();
+...</code></pre></div>
+<p>Las mónadas como <code>Optional</code> o <code>Stream</code> pueden fácilmente convertirse en un galimatías <em>“lispiano”</em> de la siguiente forma (ejemplos tomados por ahí):</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java">Optional.<span class="fu">of</span>(<span class="kw">new</span> <span class="fu">Outer</span>())
+    .<span class="fu">flatMap</span>(o -&gt; Optional.<span class="fu">ofNullable</span>(o.<span class="fu">nested</span>))
+    .<span class="fu">flatMap</span>(n -&gt; Optional.<span class="fu">ofNullable</span>(n.<span class="fu">inner</span>))
+    .<span class="fu">flatMap</span>(i -&gt; Optional.<span class="fu">ofNullable</span>(i.<span class="fu">foo</span>))
+    .<span class="fu">ifPresent</span>(<span class="bu">System</span>.<span class="fu">out</span>::println);</code></pre></div>
+<p>o</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="bu">Arrays</span>.<span class="fu">asList</span>(<span class="st">&quot;a1&quot;</span>, <span class="st">&quot;a2&quot;</span>, <span class="st">&quot;b1&quot;</span>, <span class="st">&quot;c2&quot;</span>, <span class="st">&quot;c1&quot;</span>)
+    .<span class="fu">parallelStream</span>()
+    .<span class="fu">filter</span>(s -&gt; {
+        <span class="bu">System</span>.<span class="fu">out.format</span>(<span class="st">&quot;filter: </span><span class="sc">%s</span><span class="st"> [</span><span class="sc">%s</span><span class="st">]</span><span class="sc">\n</span><span class="st">&quot;</span>,
+            s, <span class="bu">Thread</span>.<span class="fu">currentThread</span>().<span class="fu">getName</span>());
+        <span class="kw">return</span> <span class="kw">true</span>;
+    })
+    .<span class="fu">map</span>(s -&gt; {
+        <span class="bu">System</span>.<span class="fu">out.format</span>(<span class="st">&quot;map: </span><span class="sc">%s</span><span class="st"> [</span><span class="sc">%s</span><span class="st">]</span><span class="sc">\n</span><span class="st">&quot;</span>,
+            s, <span class="bu">Thread</span>.<span class="fu">currentThread</span>().<span class="fu">getName</span>());
+        <span class="kw">return</span> s.<span class="fu">toUpperCase</span>();
+    })
+    .<span class="fu">sorted</span>((s1, s2) -&gt; {
+        <span class="bu">System</span>.<span class="fu">out.format</span>(<span class="st">&quot;sort: </span><span class="sc">%s</span><span class="st"> &lt;&gt; </span><span class="sc">%s</span><span class="st"> [</span><span class="sc">%s</span><span class="st">]</span><span class="sc">\n</span><span class="st">&quot;</span>,
+            s1, s2, <span class="bu">Thread</span>.<span class="fu">currentThread</span>().<span class="fu">getName</span>());
+        <span class="kw">return</span> s1.<span class="fu">compareTo</span>(s2);
+    })
+    .<span class="fu">forEach</span>(s -&gt; <span class="bu">System</span>.<span class="fu">out.format</span>(<span class="st">&quot;forEach: </span><span class="sc">%s</span><span class="st"> [</span><span class="sc">%s</span><span class="st">]</span><span class="sc">\n</span><span class="st">&quot;</span>,
+        s, <span class="bu">Thread</span>.<span class="fu">currentThread</span>().<span class="fu">getName</span>()));</code></pre></div>
+<p>o</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java">IntStream.<span class="fu">rangeClosed</span>(<span class="dv">0</span>,<span class="dv">9</span>) <span class="co">/* 0 &lt;= A &lt;= 9 */</span>
+    .<span class="fu">parallel</span>()
+    .<span class="fu">mapToObj</span>(<span class="bu">Integer</span>::valueOf)
+    .<span class="fu">flatMap</span>(a -&gt;
+            IntStream.<span class="fu">rangeClosed</span>(<span class="dv">0</span>,<span class="dv">9</span>) <span class="co">/* 0 &lt;= B &lt;= 9 */</span>
+            .<span class="fu">mapToObj</span>(<span class="bu">Integer</span>::valueOf)
+            .<span class="fu">flatMap</span>(b -&gt;
+                    IntStream.<span class="fu">rangeClosed</span>(<span class="dv">0</span>,<span class="dv">9</span>) <span class="co">/* 0 &lt;= C &lt;= 9 */</span>
+                    .<span class="fu">mapToObj</span>(c -&gt; (<span class="kw">new</span> <span class="fu">Product</span>()).<span class="fu">A</span>(a).<span class="fu">B</span>(b).<span class="fu">C</span>(c))
+            )
+     ).<span class="fu">count</span>();</code></pre></div>
+<p>o similares.</p>
+<p>Aunque éstos no son ejemplos demasiado enrevesados, se aprecia el problema con la sintáxis al estar obligados a definir <em>lambdas</em>.</p>
+<h2 id="net-linq">.Net LINQ</h2>
+<p>De forma similar ocurre con <em>.Net</em>, cierto que posee la sintáxis especial para consultas <em>LINQ</em> que permiten definir y enlazar acciones monádicas, pero tiene problemas similares (ej. no puedes intercalar, fácilmente/legiblemente, bloques de código), hay restricciones al combinarlas, quedan identadas, etc…</p>
+<h2 id="scala-y-haskell">Scala y Haskell</h2>
+<p>Si estás leyendo aún, lo mas probable es que ya conozcas el (feo) <code>for/yield</code> de <em>Scala</em> y la (elegante) <em>“do notation”</em> de <em>Haskell</em>.</p>
+<p>¿Sería posible que lenguajes eminentemente orientados a objetos alojaran la elegante <em>“do notation”</em> de <em>Haskell</em>?</p>
+<p>Pues sí.</p>
+<h2 id="do-notation-en-java">Do Notation en Java</h2>
+<p>Para ponerte en contexto, introduzco aquí ya la notación obtenida.</p>
+<p>Supón que tienes una función monádica como (usaré <code>Stream</code> por claridad):</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java">Stream&lt;<span class="bu">Integer</span>&gt; <span class="fu">algo</span>(<span class="dt">int</span> a, <span class="dt">int</span> b, <span class="dt">int</span> c) {
+  <span class="at">@bind</span> <span class="bu">Integer</span> x = IntStream.<span class="fu">range</span>(<span class="dv">0</span>, a).<span class="fu">boxed</span>().<span class="fu">get</span>();
+  <span class="at">@bind</span> <span class="bu">Integer</span> y = IntStream.<span class="fu">range</span>(x, b).<span class="fu">boxed</span>().<span class="fu">get</span>();
+  <span class="at">@bind</span> <span class="bu">Integer</span> z = IntStream.<span class="fu">range</span>(y, c).<span class="fu">boxed</span>().<span class="fu">get</span>();
+  <span class="kw">return</span> Stream.<span class="fu">of</span>(x + y + z);
+}</code></pre></div>
+<p>El <code>@bind</code> indica que la expresión es monádica, pero que queremos asignar un identificador (<code>x</code>, <code>y</code> y <code>z</code> en cada caso) a cada aplicación de la acción y usarla después. <code>get</code> únicamente nos sirve para indicar el tipo esperado.</p>
+<p>El código anterior se expandiría (hago simplificación para que pueda compararse legibilidad) a:</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java">Stream&lt;<span class="bu">Integer</span>&gt; <span class="fu">algo</span>(<span class="dt">int</span> a, <span class="dt">int</span> b, <span class="dt">int</span> c) {
+  <span class="kw">return</span> IntStream.<span class="fu">range</span>(<span class="dv">0</span>, a).<span class="fu">boxed</span>().<span class="fu">flatMap</span>(x -&gt;
+         IntStream.<span class="fu">range</span>(x, b).<span class="fu">boxed</span>().<span class="fu">flatMap</span>(y -&gt;
+         IntStream.<span class="fu">range</span>(y, c).<span class="fu">boxed</span>().    <span class="fu">map</span>(z -&gt; x + y + z)));</code></pre></div>
+<p>En general, se realiza la transformación desde:</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java">  ...
+  <span class="at">@bind</span> T x = m.<span class="fu">k</span>();
+  BLOCK;
+  <span class="kw">return</span> w;</code></pre></div>
+<p>donde:</p>
+<ol style="list-style-type: decimal">
+<li><strong>T</strong> es el tipo contenido en la mónada.</li>
+<li><strong>x</strong> es el identificador asociado al valor.</li>
+<li><strong>m</strong> es una expresión monádica.</li>
+<li><strong>k</strong> es el <em>getter</em> que permite representar de forma sintácticamente correcta el enlace.</li>
+<li><strong>BLOCK</strong> es cualquier código de bloque en el <em>scope</em> de este enlace (por supuesto puede haber cualquier código por encima).</li>
+<li><strong>w</strong> es la mónada resultado final (debe ser una mónada porque el resultado puedo no ser puro).</li>
+</ol>
+<p>Lo cual se transformará en:</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java">  ...
+  <span class="kw">return</span> m.<span class="fu">k</span>'((T x) -&gt; {
+    BLOCK;
+    <span class="kw">return</span> w;
+  });</code></pre></div>
+<p>donde:</p>
+<ol style="list-style-type: decimal">
+<li><strong>k’</strong> es la acción monádica real (que viene del <code>@BindTo</code> de <code>k</code>).</li>
+</ol>
+<h2 id="un-sencillo-ejemplo">Un sencillo ejemplo</h2>
+<p>Supón que tenemos un fichero con millones de línea y en cada línea varias ecuaciones de segundo grado. Nos piden tomar ese fichero y generar otro evaluando las ecuaciones, indicando error si el resultado es número complejo. Nos piden que el uso de memoria sea mínimo y que si una ecuación no puede calcularse se informe del error, nº de línea y posición.</p>
+<p>Una forma de acarrear el estado éxito/error y poder combinarlo fácilmente es usando mónadas, en este ejemplo se usarán <code>Optional</code>, <code>Stream</code> y <code>Either</code>.</p>
+<p>(Nota, las clases <code>Optional</code> y <code>Stream</code> son cerradas a la inclusión de un <code>get</code> para anotarlas con <code>@BindTo</code>, por lo que realmente han sido wrapeadas en tipo <code>MOptional</code> y <code>MStream</code>; véase el <a href="https://github.com/josejuan/java-do-notation-examples">repositorio</a>)</p>
+<p>Evaluar una ecuación de segundo grado en el que no se admiten valores complejos, da como resultado un <em>“quizás un número real”</em>, es decir:</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">private</span> <span class="dt">static</span> Optional&lt;<span class="bu">Double</span>&gt; <span class="fu">solveQuadratic</span>(<span class="dt">double</span> a, <span class="dt">double</span> b, <span class="dt">double</span> c) {
+    <span class="at">@bind</span> <span class="bu">Double</span> r = <span class="fu">of</span>(b * b - <span class="dv">4</span>. * a * c).<span class="fu">filter</span>(w -&gt; w &gt;= <span class="dv">0</span>.).<span class="fu">get</span>();
+    <span class="kw">return</span> <span class="fu">of</span>((-b + <span class="bu">Math</span>.<span class="fu">sqrt</span>(r)) / (<span class="dv">2</span>. * a));
+}</code></pre></div>
+<p>Si la ecuación viene en formato texto y debemos parsearla, podemos tener errores tanto al parsear como después al evaluarla, las acciones monádicas nos permiten ignorar los errores salvo que lo deseemos (ej. para convertir o refinar un error en <code>toEither</code>):</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">private</span> <span class="dt">static</span> Either&lt;<span class="bu">String</span>, <span class="bu">Double</span>&gt; <span class="fu">solveQuadratic</span>(<span class="dt">final</span> <span class="bu">String</span> equation) {
+    <span class="at">@bind</span> <span class="bu">String</span>[] mx = <span class="fu">parseRegex</span>(<span class="st">&quot;^([</span><span class="sc">\\</span><span class="st">+</span><span class="sc">\\</span><span class="st">-</span><span class="sc">\\</span><span class="st">.0-9]+)x</span><span class="sc">\\</span><span class="st">^2([</span><span class="sc">\\</span><span class="st">+</span><span class="sc">\\</span><span class="st">-</span><span class="sc">\\</span><span class="st">.0-9]+)x([</span><span class="sc">\\</span><span class="st">+</span><span class="sc">\\</span><span class="st">-</span><span class="sc">\\</span><span class="st">.0-9]+)$&quot;</span>, equation.<span class="fu">replace</span>(<span class="st">&quot; &quot;</span>, <span class="st">&quot;&quot;</span>)).<span class="fu">get</span>();
+    <span class="at">@bind</span> <span class="bu">Double</span> a = <span class="fu">parseDouble</span>(mx[<span class="dv">1</span>]).<span class="fu">get</span>();
+    <span class="at">@bind</span> <span class="bu">Double</span> b = <span class="fu">parseDouble</span>(mx[<span class="dv">2</span>]).<span class="fu">get</span>();
+    <span class="at">@bind</span> <span class="bu">Double</span> c = <span class="fu">parseDouble</span>(mx[<span class="dv">3</span>]).<span class="fu">get</span>();
+    <span class="kw">return</span> <span class="fu">solveQuadratic</span>(a, b, c).<span class="fu">toEither</span>(<span class="st">&quot;I don't know the imaginary numbers!&quot;</span>);
+}</code></pre></div>
+<p>En general, un <code>Stream</code> no puede enumerarse, para ello deben usarse <em>“hacks”</em> como el siguiente, el cual ya te puedes imaginar qué tal legible quedaría en un anidamiento de <code>flatMaps</code>:</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">private</span> <span class="dt">static</span> Stream&lt;<span class="bu">String</span>&gt; <span class="fu">solveQuadratics</span>(<span class="dt">final</span> Stream&lt;<span class="bu">String</span>&gt; lines) {
+
+    <span class="dt">final</span> <span class="bu">AtomicInteger</span> row = <span class="kw">new</span> <span class="bu">AtomicInteger</span>(<span class="dv">0</span>);
+    <span class="at">@bind</span> <span class="bu">String</span> equations = lines.<span class="fu">get</span>();
+    row.<span class="fu">incrementAndGet</span>();
+
+    <span class="dt">final</span> <span class="bu">AtomicInteger</span> col = <span class="kw">new</span> <span class="bu">AtomicInteger</span>(<span class="dv">0</span>);
+    <span class="at">@bind</span> <span class="bu">String</span> equation = Stream.<span class="fu">of</span>(equations.<span class="fu">split</span>(<span class="st">&quot;;&quot;</span>)).<span class="fu">get</span>();
+    col.<span class="fu">incrementAndGet</span>();
+
+    <span class="dt">final</span> <span class="bu">String</span> result = <span class="fu">solveQuadratic</span>(equation)
+            .<span class="fu">either</span>(
+                    e -&gt; <span class="bu">String</span><span class="fu">.format</span>(<span class="st">&quot;at </span><span class="sc">%d</span><span class="st">,</span><span class="sc">%d</span><span class="st">: </span><span class="sc">%s</span><span class="st">&quot;</span>, row.<span class="fu">get</span>(), col.<span class="fu">get</span>(), e),
+                    x -&gt; x.<span class="fu">toString</span>());
+
+    <span class="kw">return</span> Stream.<span class="fu">of</span>(result);
+}</code></pre></div>
+<p>Por último y aunque ésto ya no tiene nada que ver con el post, una lectura/escritura perezosa de ficheros gigantes:</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">private</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">batch</span>(<span class="dt">final</span> <span class="bu">String</span> inputFile, <span class="dt">final</span> <span class="bu">String</span> outputFile) <span class="kw">throws</span> <span class="bu">IOException</span> {
+    <span class="dt">final</span> <span class="bu">File</span> i = <span class="kw">new</span> <span class="bu">File</span>(inputFile);
+    <span class="dt">final</span> <span class="bu">File</span> o = <span class="kw">new</span> <span class="bu">File</span>(outputFile);
+
+    <span class="kw">try</span> (<span class="dt">final</span> <span class="bu">InputStream</span> is = <span class="kw">new</span> <span class="bu">FileInputStream</span>(i);
+         <span class="dt">final</span> <span class="bu">BufferedReader</span> br = <span class="kw">new</span> <span class="bu">BufferedReader</span>(<span class="kw">new</span> <span class="bu">InputStreamReader</span>(is));
+         <span class="dt">final</span> <span class="bu">OutputStream</span> os = <span class="kw">new</span> <span class="bu">FileOutputStream</span>(o);
+         <span class="dt">final</span> <span class="bu">PrintWriter</span> bw = <span class="kw">new</span> <span class="bu">PrintWriter</span>(<span class="kw">new</span> <span class="bu">OutputStreamWriter</span>(os))) {
+
+        <span class="fu">solveQuadratics</span>(<span class="fu">from</span>(br.<span class="fu">lines</span>())).<span class="fu">forEach</span>(bw::println);
+
+    }
+}
+
+<span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span>(<span class="bu">String</span><span class="kw">... </span>args) <span class="kw">throws</span> <span class="bu">IOException</span> {
+    <span class="kw">if</span> (args.<span class="fu">length</span> != <span class="dv">2</span>)
+        <span class="bu">System</span>.<span class="fu">err.printf</span>(<span class="st">&quot;usage: do-notation-example input.equations output.equations</span><span class="sc">%n</span><span class="st">&quot;</span>);
+    <span class="kw">else</span>
+        <span class="fu">batch</span>(args[<span class="dv">0</span>], args[<span class="dv">1</span>]);
+}</code></pre></div>
+<p>Por ejemplo con entradas como:</p>
+<pre class="text"><code>-0.6005718616567053 x^2 + 0.15154725566778038 x + 0.1505222670492632; -0.1856515139096222 x^2 -0.2512588106349458 x -0.9273568738073994; -0.474643897361706 x^2 -0.7760360355116882 x + 0.7357293270431606; 0.690900526619453 x^2 -0.20895148552686682 x -8.117984617732765e-2
+0.15106056207855567 x^2 + 0.810769035280229 x -0.39992991910765885; -0.3076352907485529 x^2 + 0.8152016354996694 x + 0.2504532359538494; -0.21475183628668515 x^2 + 1.626803536839616e-2 x + 0.7657361518929198; -0.6884644508167623 x^2 + 0.11053810499162853 x -0.6674127643678218; -0.7485930871907955 x^2 + 0.6709259594769152 x + 0.6422147555269133
+-0.48667900914456186 x^2 -0.7585850484253822 x + 0.4533736693500501; -0.9733025900497643 x^2 -0.9884392198887242 x + 0.46587223360400865
+0.6821590027536899 x^2 + 0.938386011461922 x -0.20844886486152703; 0.26593181923199727 x^2 + 0.19570217204974294 x + 4.266402319057949e-3; -0.9581839986890319 x^2 -0.7920479799651408 x -0.14350775059907916; -0.6292078757696296 x^2 + 0.6757728794274893 x + 3.435974062935521e-2; 7.164960720548841e-3 x^2 -0.4330467876850872 x -0.897257494741998
+...</code></pre>
+<p>Tenemos salidas como:</p>
+<pre class="text"><code>-0.3901158869207098
+at 1,2: I don't know the imaginary numbers!
+-2.306909085085579
+at 1,4: string '0.690900526619453x^2-0.20895148552686682x-8.117984617732765e-2' do not match pattern '^([\+\-\.0-9]+)x\^2([\+\-\.0-9]+)x([\+\-\.0-9]+)$'
+0.45474340224281307
+-0.2780526182898415
+at 2,3: string '-0.21475183628668515x^2+1.626803536839616e-2x+0.7657361518929198' do not match pattern '^([\+\-\.0-9]+)x\^2([\+\-\.0-9]+)x([\+\-\.0-9]+)$'
+at 2,4: I don't know the imaginary numbers!
+-0.5808123792505075
+-2.019892706570561
+...</code></pre>
+<p>Y se observa que por un lado la complejidad es lineal y el consumo de memoria constante:</p>
+<p><img src="../images/do-notation-example-result.png" /></p>
+<h2 id="javac-ast-y-demás-pócimas-arcanas">javac, AST y demás pócimas arcanas</h2>
+<p>Para introducir de forma adecuada la <em>do notation</em> en <em>Java</em> hemos tenido que modificar su semántica pero a la vez que su sintáxis siga intácta (para que el código pueda ser interpretado por cualquier <em>software</em> que desee interpretar nuestro código <em>Java</em>).</p>
+<p><strong>Desafortunadamente</strong> <em>Java</em> no posee una forma estándar de modificar la semántica, pero he aquí unos <del>insconscientes</del> intrépidos <strong>lombokianos</strong> que te permiten precisamente eso que necesitamos, modificar la semántica del lenguaje.</p>
+<p>Para ello éstos <del>locos</del> valientes hacen todo tipo de <del>guarrerías</del> subterfugios.</p>
+<p>Así, borrachos de insensatez, hemos <em>forkeado</em> <a href="https://github.com/josejuan/lombok">lombok</a>, metido de lleno en las procelosas aguas de <em>javac</em> y amigos y, tras salir del laberinto del Fauno, obtenido los tres ansiados objetos mágicos:</p>
+<ol style="list-style-type: decimal">
+<li><em>“El bueno”</em> <a href="https://github.com/josejuan/lombok/blob/master/src/core/lombok/bind.java"><code>@bind</code></a></li>
+<li><em>“El malo”</em> <a href="https://github.com/josejuan/lombok/blob/master/src/core/lombok/BindTo.java"><code>@BindTo</code></a></li>
+<li><em>“El feo”</em> <a href="https://github.com/josejuan/lombok/blob/master/src/core/lombok/javac/handlers/HandleBind.java"><code>HandleBind</code></a></li>
+</ol>
+<p>Salvo que si quieres <em>hackear</em> <code>lombok</code> vas a tener que ser un poco cabezón, extendernos en el <code>HandlerBind</code> aquí no desviaría de nuestro objetivo, por tanto <em>“El feo”</em> se queda fuera.</p>
+<h2 id="conclusión">Conclusión</h2>
+<p>El esquema indicado puede aplicarse a diversas mónadas y estructuras como los builders (un builder es un caso muy particular de mónada o más bien, con mónadas puede implementarse un builder). Además una misma mónada (clase) puede definir diferentes enlaces para diferentes tipos de <em>“bindeo”</em>. Tristemente, será complicado (¡ojalá!) ver composiciones similares <code>@bind</code> en éstos lenguajes.</p>
+<p>En cuanto a <strong>lombok</strong> me parece un banco muy interesante para realizar pruebas, pero es muy cuestionable su uso en códigos que esperen mantenerse durante un plazo indeterminado y/o cuyos entornos de despliegue puedan sufrir cambios.</p>
+
+<div id="disqus_thread"></div>
+<script>
+(function() {
+  var d = document, s = d.createElement('script');
+  s.src = '//josejuan-github-io.disqus.com/embed.js';
+  s.setAttribute('data-timestamp', +new Date());
+  (d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');ga('create', 'UA-3981685-5', 'auto');ga('send', 'pageview');
+        </script>
+    </body>
+</html>

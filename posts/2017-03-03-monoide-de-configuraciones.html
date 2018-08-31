@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>josejuan - Monoide de configuraciones</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+    </head>
+    <body>
+        <div id="header">
+            <div id="logo">
+              <a href="../">josejuan <s>blog</s></a>
+            </div>
+            <div id="navigation">
+                <a href="../">Home</a>
+                <a href="../about.html">Acerca de</a>
+                <a href="../archive.html">Archivo</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <h1>Monoide de configuraciones</h1>
+
+            <div class="info">
+    Posted on March  3, 2017
+    
+        by josejuan
+    
+</div>
+
+<p>Los conceptos matemáticos como <em>Monoide</em> te permiten entender fácilmente las propiedades e implicaciones de ciertas estructuras y aplicarlas con rápidez. En este caso ha salido un curioso <em>kata</em> en el que se mezclan conceptos matemáticos (<em>Monoide</em>), programación funcional (la mónada <code>Optional</code> de <em>Java 8</em> al usar <code>flatMap</code>), cierta utilidad (configuración ubícua) y una estructura al más clásico estilo <em>POO</em> ¿curioso no?</p>
+<p>Normalmente todas las aplicaciones necesitan configuración y aunque existen ciertos patrones, se puede afirmar que la configuración de una aplicación no es ubícua, es decir, debes saber dónde y cómo se configura en cada caso y, además, quizás no sea la forma más adecuada para tu despliegue particular. Es común poder fijar configuraciones vía la línea de comandos (ej. en <em>Java</em> usando algo como <code>-Dparametro=valor</code>), las variables de entorno (como en <code>PARAMETRO=valor ./programa.exe</code>), archivos de configuración (<em>xml</em>, <em>json</em>, <em>yaml</em>, <em>properties</em>, …), base de datos, sistemas distribuidos (como <em>ZooKeeper</em>) y en fin, una innumerable cantidad de formas.</p>
+<p>Que los diferentes orígenes de la configuración se apliquen por defecto es relativamente frecuente y, al hacerlo, las configuraciones como las anteriores forman un monoide al aplicar sucesivamente una detrás de otra hasta que cierto valor está definido:</p>
+<pre><code>Configuración = Origen1 | Origen2 | ... | PorDefecto</code></pre>
+<p>Así, lo primero que necesitamos, es un monoide:</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">public</span> <span class="kw">interface</span> Monoid&lt;T&gt; {
+    T <span class="fu">mappend</span>(T other);
+}</code></pre></div>
+<p>Por otro lado, necesitamos poder referenciar las configuraciones. Típicamente sería la dirección de un recurso (<em>URL</em>), un espacio de nombres (<code>app.ui.color</code>), etc. Como queremos abstraer ese direccionamiento, podríamos dejarlo como:</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">public</span> <span class="kw">interface</span> ConfigKey {
+    <span class="bu">String</span> <span class="fu">getName</span>();
+}</code></pre></div>
+<p>En que <code>getName</code> permite usar ese direccionamiento en cualquier escenario (digamos que es una serialización).</p>
+<p>Y ya está, ya tenemos todo lo necesario para tener configuración ubícua (monoidalmente). Lo que vamos a hacer es definir un proveedor de configuración:</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">public</span> <span class="kw">abstract</span> <span class="kw">class</span> ConfigProvider&lt;E <span class="kw">extends</span> ConfigKey&gt; <span class="kw">implements</span> Monoid&lt;ConfigProvider&lt;E&gt;&gt; {
+
+    <span class="kw">public</span> <span class="kw">abstract</span> Optional&lt;<span class="bu">String</span>&gt;  <span class="fu">getString</span> (E key);
+    <span class="kw">public</span> <span class="kw">abstract</span> Optional&lt;<span class="bu">Integer</span>&gt; <span class="fu">getInteger</span>(E key);
+    <span class="kw">public</span> <span class="kw">abstract</span> Optional&lt;<span class="bu">Boolean</span>&gt; <span class="fu">getBoolean</span>(E key);
+
+    <span class="at">@Override</span>
+    <span class="kw">public</span> ConfigProvider&lt;E&gt; <span class="fu">mappend</span>(<span class="dt">final</span> ConfigProvider&lt;E&gt; b) {
+        <span class="dt">final</span> ConfigProvider&lt;E&gt; a = <span class="kw">this</span>;
+        <span class="kw">return</span> <span class="kw">new</span> ConfigProvider&lt;E&gt;() {
+            <span class="at">@Override</span> <span class="kw">public</span> Optional&lt;<span class="bu">String</span>&gt;  <span class="fu">getString</span> (E key) { <span class="kw">return</span> <span class="fu">or</span>(ConfigProvider::getString , key); }
+            <span class="at">@Override</span> <span class="kw">public</span> Optional&lt;<span class="bu">Integer</span>&gt; <span class="fu">getInteger</span>(E key) { <span class="kw">return</span> <span class="fu">or</span>(ConfigProvider::getInteger, key); }
+            <span class="at">@Override</span> <span class="kw">public</span> Optional&lt;<span class="bu">Boolean</span>&gt; <span class="fu">getBoolean</span>(E key) { <span class="kw">return</span> <span class="fu">or</span>(ConfigProvider::getBoolean, key); }
+
+            <span class="kw">private</span> &lt;Z&gt; Optional&lt;Z&gt; <span class="fu">or</span>(BiFunction&lt;ConfigProvider&lt;E&gt;, E, Optional&lt;Z&gt;&gt; g, E key) {
+                <span class="dt">final</span> Optional&lt;Z&gt; r = g.<span class="fu">apply</span>(a, key);
+                <span class="kw">return</span> r.<span class="fu">isPresent</span>() ? r : g.<span class="fu">apply</span>(b, key); <span class="co">// where is applicative/alternative?</span>
+            }
+        };
+    }
+}</code></pre></div>
+<p>No hay mucho que decir, nuestro proveedor de configuración (<code>ConfigProvider</code>) lo hará de cierto tipo de claves de configuración y será un monoide. El tipo de configuración que podemos recuperar (a este nivel de abstracción, un proveedor especializado podría saber leer estructuras más complejas) son cadenas, números y booleanos. La operación monoidal es inmediata.</p>
+<p>Podríamos terminar aquí el <em>kata</em> pero claro, queda un poco fría la cosa, así que vamos a implementar algunos <em>backends</em> y cacharrear un rato.</p>
+<p>Una de las cosas curiosas que he descubierto hace poco de <em>Java</em> es que las enumeraciones son <em>“raras”</em> (me lo siguen pareciendo), porque realmente son clases, pero no lo son… bueno que más da, el caso es que vamos a restringir que algunas cosas <em>“raras”</em> (como las enumeraciones) tengan persistencia. Eso lo podemos hacer así:</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">public</span> <span class="kw">interface</span> EnumBackend {
+    Optional&lt;<span class="bu">String</span>&gt; <span class="fu">getPersistence</span>();
+}</code></pre></div>
+<p>En que símplemente decimos que cierto objeto deberá poder darnos su valor (si está disponible).</p>
+<p>Mirar que curiosa (por decir algo) queda una enumeración en <em>Java</em>:</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">public</span> <span class="kw">enum</span> MyEnumConfig <span class="kw">implements</span> EnumBackend, ConfigKey {
+
+    SERVICE_ENDPOINT {
+        <span class="at">@Override</span>
+        <span class="kw">public</span> Optional&lt;<span class="bu">String</span>&gt; <span class="fu">getPersistence</span>() {
+            <span class="kw">return</span> Optional.<span class="fu">of</span>(<span class="st">&quot;http://www.google.es&quot;</span>);
+        }
+    },
+
+    CONNECTION_TIMEOUT {
+        <span class="at">@Override</span>
+        <span class="kw">public</span> Optional&lt;<span class="bu">String</span>&gt; <span class="fu">getPersistence</span>() {
+            <span class="kw">return</span> Optional.<span class="fu">of</span>(<span class="st">&quot;300&quot;</span>);
+        }
+    },
+
+    ENABLED {
+        <span class="at">@Override</span>
+        <span class="kw">public</span> Optional&lt;<span class="bu">String</span>&gt; <span class="fu">getPersistence</span>() {
+            <span class="kw">return</span> Optional.<span class="fu">of</span>(<span class="st">&quot;true&quot;</span>);
+        }
+    };
+
+    <span class="at">@Override</span>
+    <span class="kw">public</span> <span class="bu">String</span> <span class="fu">getName</span>() {
+        <span class="kw">return</span> <span class="fu">name</span>();
+    }
+
+}</code></pre></div>
+<p>Claro que le estamos pidiendo mucho: que sea una clave de configuración y a la vez ¡que nos de los valores por defecto!</p>
+<p>Antes de crear el proveedor de configuración, nos damos cuenta que los valores obtenidos desde persistencia (cadenas en este caso) deberán ser deserializados (parseados), por lo que podemos implementar una abstracción que nos haga ese paso y lo tendremos gratis para todas las persistencias de este tipo:</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">public</span> <span class="kw">abstract</span> <span class="kw">class</span> KeyValueProvider&lt;E <span class="kw">extends</span> ConfigKey&gt; <span class="kw">extends</span> ConfigProvider&lt;E&gt; {
+
+    <span class="at">@Override</span>
+    <span class="kw">public</span> Optional&lt;<span class="bu">Integer</span>&gt; <span class="fu">getInteger</span>(E key) {
+        <span class="kw">return</span> <span class="fu">getString</span>(key).<span class="fu">flatMap</span>(KeyValueProvider::parseInt);
+    }
+
+    <span class="at">@Override</span>
+    <span class="kw">public</span> Optional&lt;<span class="bu">Boolean</span>&gt; <span class="fu">getBoolean</span>(E key) {
+        <span class="kw">return</span> <span class="fu">getString</span>(key).<span class="fu">flatMap</span>(KeyValueProvider::parseBool);
+    }
+
+    <span class="kw">private</span> <span class="dt">static</span> Optional&lt;<span class="bu">Integer</span>&gt; <span class="fu">parseInt</span>(<span class="bu">String</span> data) {
+        <span class="kw">try</span> {
+            <span class="kw">return</span> Optional.<span class="fu">of</span>(<span class="bu">Integer</span>.<span class="fu">parseInt</span>(data));
+        } <span class="kw">catch</span> (<span class="bu">Exception</span> ignore) {
+            <span class="kw">return</span> Optional.<span class="fu">empty</span>();
+        }
+    }
+
+    <span class="kw">private</span> <span class="dt">static</span> Optional&lt;<span class="bu">Boolean</span>&gt; <span class="fu">parseBool</span>(<span class="bu">String</span> data) {
+        <span class="kw">if</span>(<span class="st">&quot;true&quot;</span> .<span class="fu">equalsIgnoreCase</span>(data)) <span class="kw">return</span> Optional.<span class="fu">of</span>(<span class="kw">true</span> );
+        <span class="kw">if</span>(<span class="st">&quot;false&quot;</span>.<span class="fu">equalsIgnoreCase</span>(data)) <span class="kw">return</span> Optional.<span class="fu">of</span>(<span class="kw">false</span>);
+        <span class="kw">return</span> Optional.<span class="fu">empty</span>();
+    }
+}</code></pre></div>
+<p>Esta abstracción asume que estará disponible la recuperación de valores desde cadenas, por lo que usa <code>getString</code> para parsear otros valores (¡por cierto! <code>flatMap</code> es la acción monádica <code>bind</code>).</p>
+<p>Con esta abstracción, tener un proveedor de configuración desde enumeraciones es inmediato:</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">public</span> <span class="kw">class</span> EnumProvider&lt;E <span class="kw">extends</span> <span class="bu">Enum</span>&lt;E&gt; &amp; ConfigKey &amp; EnumBackend&gt; <span class="kw">extends</span> KeyValueProvider&lt;E&gt; {
+    <span class="at">@Override</span>
+    <span class="kw">public</span> Optional&lt;<span class="bu">String</span>&gt; <span class="fu">getString</span>(E key) {
+        <span class="kw">return</span> key.<span class="fu">getPersistence</span>();
+    }
+}</code></pre></div>
+<p>Pero también desde las variables de entorno:</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">public</span> <span class="kw">class</span> EnvironmentProvider&lt;E <span class="kw">extends</span> ConfigKey&gt; <span class="kw">extends</span> KeyValueProvider&lt;E&gt; {
+    <span class="at">@Override</span>
+    <span class="kw">public</span> Optional&lt;<span class="bu">String</span>&gt; <span class="fu">getString</span>(E key) {
+        <span class="kw">return</span> Optional.<span class="fu">ofNullable</span>(<span class="bu">System</span>.<span class="fu">getenv</span>(key.<span class="fu">getName</span>()));
+    }
+}</code></pre></div>
+<p>Desde los parámetros de la <em>JVM</em>:</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">public</span> <span class="kw">class</span> SystemPropertyProvider&lt;E <span class="kw">extends</span> ConfigKey&gt; <span class="kw">extends</span> KeyValueProvider&lt;E&gt; {
+    <span class="at">@Override</span>
+    <span class="kw">public</span> Optional&lt;<span class="bu">String</span>&gt; <span class="fu">getString</span>(E key) {
+        <span class="kw">return</span> Optional.<span class="fu">ofNullable</span>(<span class="bu">System</span>.<span class="fu">getProperty</span>(key.<span class="fu">getName</span>()));
+    }
+}</code></pre></div>
+<p>Desde archivos de propiedades:</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">public</span> <span class="kw">class</span> PropertiesProvider&lt;E <span class="kw">extends</span> ConfigKey&gt; <span class="kw">extends</span> KeyValueProvider&lt;E&gt; {
+
+    <span class="kw">private</span> <span class="dt">final</span> Optional&lt;<span class="bu">Properties</span>&gt; file;
+
+    <span class="kw">public</span> <span class="fu">PropertiesProvider</span>(<span class="bu">String</span> filePath) {
+        file = <span class="fu">readFile</span>(filePath);
+    }
+
+    <span class="at">@Override</span>
+    <span class="kw">public</span> Optional&lt;<span class="bu">String</span>&gt; <span class="fu">getString</span>(E key) {
+        <span class="kw">return</span> file.<span class="fu">flatMap</span>(p -&gt; Optional.<span class="fu">ofNullable</span>(p.<span class="fu">getProperty</span>(key.<span class="fu">getName</span>())));
+    }
+
+    <span class="kw">private</span> <span class="dt">static</span> Optional&lt;<span class="bu">Properties</span>&gt; <span class="fu">readFile</span>(<span class="bu">String</span> filePath) {
+        <span class="kw">try</span> (<span class="bu">FileInputStream</span> fs = <span class="kw">new</span> <span class="bu">FileInputStream</span>(filePath)) {
+            <span class="dt">final</span> <span class="bu">Properties</span> p = <span class="kw">new</span> <span class="bu">Properties</span>();
+            p.<span class="fu">load</span>(fs);
+            <span class="kw">return</span> Optional.<span class="fu">of</span>(p);
+        } <span class="kw">catch</span> (<span class="bu">IOException</span> ignore) {
+            <span class="kw">return</span> Optional.<span class="fu">empty</span>();
+        }
+    }
+}</code></pre></div>
+<p>¡Eh! ¡la culpa de que <code>readFile</code> sea tan feo no es mía!</p>
+<p>Y así desde cualquier <em>backend</em> que se nos ocurra. Lo interesante, es que podemos ordenar todos esos <em>backend</em> para que sobreescriban sucesivamente la configuración por defecto. Por ejemplo, generar una configuración típica en que lo que más prioridad podría tener es la línea de comandos, luego las variables de entorno, después un archivo de configuración y por último los valores por defecto <em>hardcodeados</em> sería combinar monoidalmente esas configuraciones particulares:</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="fu">printMyConfig</span>(
+  <span class="kw">new</span> SystemPropertyProvider&lt;MyEnumConfig&gt;()
+    .<span class="fu">mappend</span>(<span class="kw">new</span> EnvironmentProvider&lt;&gt;())
+    .<span class="fu">mappend</span>(<span class="kw">new</span> PropertiesProvider&lt;&gt;(<span class="st">&quot;/home/josejuan/tmp/foo.properties&quot;</span>))
+    .<span class="fu">mappend</span>(<span class="kw">new</span> EnumProvider&lt;&gt;()));</code></pre></div>
+<p>Cuya salida sería:</p>
+<pre><code>Optional[http://www.haskell.org]
+Optional[250]
+Optional[false]</code></pre>
+<p>Al haber yo configurado en la <em>JVM</em> el valor <code>-DCONNECTION_TIMEOUT=250</code>, como variable de entorno <code>SERVICE_ENDPOINT=http://www.haskell.org</code> y en el archivo en cuestión una línea con <code>ENABLED=false</code>.</p>
+<p>¡Y eso es todo!</p>
+<h3 id="referencias">Referencias</h3>
+<ul>
+<li><a href="https://github.com/josejuan/java-monoid-config/tree/master/src/main/java/com/foo">Código en GitHub</a></li>
+<li><a href="https://es.wikipedia.org/wiki/Monoide">Monoide</a></li>
+</ul>
+
+<div id="disqus_thread"></div>
+<script>
+(function() {
+  var d = document, s = d.createElement('script');
+  s.src = '//josejuan-github-io.disqus.com/embed.js';
+  s.setAttribute('data-timestamp', +new Date());
+  (d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');ga('create', 'UA-3981685-5', 'auto');ga('send', 'pageview');
+        </script>
+    </body>
+</html>
