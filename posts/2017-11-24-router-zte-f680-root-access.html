@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>josejuan - ZTE F680 router root access</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+    </head>
+    <body>
+        <div id="header">
+            <div id="logo">
+              <a href="../">josejuan <s>blog</s></a>
+            </div>
+            <div id="navigation">
+                <a href="../">Home</a>
+                <a href="../about.html">Acerca de</a>
+                <a href="../archive.html">Archivo</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <h1>ZTE F680 router root access</h1>
+
+            <div class="info">
+    Posted on November 24, 2017
+    
+        by josejuan
+    
+</div>
+
+<p style="font-size: 0.75em; color: gray"><b>Nota:</b> por brevedad y en general, cualquier afirmación en este <s>blog</s> <bold>no es</bold> absoluta; por lo que implícitamente contienen un: <i>"en mi opinión"</i>, <i>"seguramente"</i>, <i>"en general"</i>, etc. Agradezco de antemano cualquier corrección.</p>
+
+<p>A tu <em>router</em> podrás entrar por telnet con algo como</p>
+<pre class="text"><code>[josejuan@centella ~]$ telnet 192.168.0.1
+Trying 192.168.0.1...
+Connected to router.
+Escape character is '^]'.
+F680
+Login: root
+Password:
+
+BusyBox v1.01 (2017.01.10-07:21+0000) Built-in shell (ash)
+Enter 'help' for a list of built-in commands.
+
+/ #</code></pre>
+<p>Donde la IP será la de por defecto u otra si la cambias y el password en mi caso <code>Zte521</code>.</p>
+<p>Aunque no podrás hacer nada desde ese terminal (cuatro comandos chorras) puedes ver por ejemplo donde montan la unidad extraible por <em>USB</em> usando el <strong>tabulador</strong> (no puedes usar el comando <code>ls</code>) por ejemplo:</p>
+<pre class="text"><code>BusyBox v1.01 (2017.01.10-07:21+0000) Built-in shell (ash)
+Enter 'help' for a list of built-in commands.
+
+/ # /mnt/usb1_1/</code></pre>
+<p>En mi caso aparece que se montará en la ruta <code>/mnt/usb1_1</code>.</p>
+<p>Podemos hacer lo mismo para confirmar/buscar la ruta del fichero de configuración del servidor <em>samba</em>.</p>
+<p>Por ejemplo (recuerda, usamos el <strong>tabulador</strong> para poder ver directorios que no podemos listar ni ver):</p>
+<pre class="text"><code>/ # /var/samba/
+/var/samba/lib/  /var/samba/var/
+/ # /var/samba/lib/
+/var/samba/lib/hosts     /var/samba/lib/lmhosts   /var/samba/lib/smb.conf
+/ # /var/samba/lib/smb.conf</code></pre>
+<p>Ya está, ya sabemos todo lo necesario para tener acceso de <em>root</em>.</p>
+<p>En una memoria <em>USB</em> crea un enlace simbólico al fichero <code>smb.conf</code>, por ejemplo <code>ln -s /var/samba/lib/smb.conf .</code> (desde <em>linux</em> supongo).</p>
+<p>Mete dicha memoria en el puerto <em>USB</em> del <em>router</em> y verifica que tienes habilitado el servidor <em>samba</em>.</p>
+<p>Inicia una sesión <em>samba</em> contra tu <em>router</em> (con <em>Windows</em>, en <em>Linux</em> parece que no va) y verás que podrás modificar el fichero <code>smb.conf</code> porque el enlace simbólico apunta al fichero real.</p>
+<p>Edítalo como desees, pero dos líneas son necesarias en el grupo <code>[global]</code>:</p>
+<pre class="text"><code>guest account = root
+preexec = /bin/sh -c '(sendcmd 1 DB set TelnetCfg 0 UserTypeFlag 0 &amp;&amp; sendcmd 1 DB save) 2&gt; /mnt/usb1_1/cmd.err &gt; /mnt/usb1_1/cmd.out'</code></pre>
+<p>Con la primera hacemos que el usuario que inicia sesión sea <code>root</code> y con la segunda modificamos la configuración del servicio de <code>telnet</code> para que no estén capados los comandos, si hubiera algún problema veremos los errores en <code>cmd.err</code> y si todo va bien, veremos la configuración activa en <code>cmd.out</code>.</p>
+<p>Una vez hayas guardado los cambios <strong>sin resetear nada</strong>, incia una nueva sesión <em>telnet</em> (realmente con que navegues desde la raíz ya se ejecuta el comando).</p>
+<p><strong>¡voila!</strong> ya tienes acceso de <em>root</em> permanente (un reset del router te mantendrá los permisos de root).</p>
+<p>Para cambiar el <em>password</em>, se trata trastear con el comando <code>sendcmd</code> que permite realizar todos los ajustes del <em>router</em>, por ejemplo para ver la configuración del servicio <code>telnet</code>:</p>
+<pre class="text"><code>/ # sendcmd 1 DB p TelnetCfg
+&lt;Tbl name=&quot;TelnetCfg&quot; RowCount=&quot;1&quot;&gt;
+        &lt;Row No=&quot;0&quot;&gt;
+                &lt;DM name=&quot;TS_Enable&quot; val=&quot;1&quot; AccessAttr=&quot;0&quot;/&gt;
+                &lt;DM name=&quot;Wan_Enable&quot; val=&quot;0&quot; AccessAttr=&quot;0&quot;/&gt;
+                &lt;DM name=&quot;Lan_Enable&quot; val=&quot;0&quot; AccessAttr=&quot;0&quot;/&gt;
+                &lt;DM name=&quot;TS_Port&quot; val=&quot;23&quot; AccessAttr=&quot;0&quot;/&gt;
+                &lt;DM name=&quot;TS_UName&quot; val=&quot;root&quot; AccessAttr=&quot;0&quot;/&gt;
+                &lt;DM name=&quot;TS_UPwd&quot; val=&quot;************&quot; AccessAttr=&quot;0&quot;/&gt;
+                &lt;DM name=&quot;Max_Con_Num&quot; val=&quot;5&quot; AccessAttr=&quot;0&quot;/&gt;
+                &lt;DM name=&quot;ProcType&quot; val=&quot;0&quot; AccessAttr=&quot;0&quot;/&gt;
+                &lt;DM name=&quot;UserTypeFlag&quot; val=&quot;0&quot; AccessAttr=&quot;0&quot;/&gt;
+        &lt;/Row&gt;
+&lt;/Tbl&gt;</code></pre>
+<p>Y para setearlo:</p>
+<pre class="text"><code>/ # sendcmd 1 DB set TelnetCfg 0 TS_UPwd aquiElPassQueQuiera
+/ # sendcmd 1 DB save</code></pre>
+<p>Y ya está.</p>
+<h3 id="referencias">Referencias</h3>
+<ul>
+<li><a href="https://blog.eth1.es/2017/02/18/desbloqueando-el-router-zte-f680/">Inf-O</a></li>
+</ul>
+
+<div id="disqus_thread"></div>
+<script>
+(function() {
+  var d = document, s = d.createElement('script');
+  s.src = '//josejuan-github-io.disqus.com/embed.js';
+  s.setAttribute('data-timestamp', +new Date());
+  (d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');ga('create', 'UA-3981685-5', 'auto');ga('send', 'pageview');
+        </script>
+    </body>
+</html>

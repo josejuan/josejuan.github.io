@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>josejuan - La sucesión del reloj astronómico de Praga</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+    </head>
+    <body>
+        <div id="header">
+            <div id="logo">
+              <a href="../">josejuan <s>blog</s></a>
+            </div>
+            <div id="navigation">
+                <a href="../">Home</a>
+                <a href="../about.html">Acerca de</a>
+                <a href="../archive.html">Archivo</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <h1>La sucesión del reloj astronómico de Praga</h1>
+
+            <div class="info">
+    Posted on June 12, 2018
+    
+        by josejuan
+    
+</div>
+
+<p style="font-size: 0.75em; color: gray"><b>Nota:</b> por brevedad y en general, cualquier afirmación en este <s>blog</s> <bold>no es</bold> absoluta; por lo que implícitamente contienen un: <i>"en mi opinión"</i>, <i>"seguramente"</i>, <i>"en general"</i>, etc. Agradezco de antemano cualquier corrección.</p>
+
+<p><span class="citation">@Jose_A_Alonso</span> <a href="http://www.glc.us.es/~jalonso/exercitium/la-sucesion-del-reloj-astronomico-de-praga">sugirió</a> enumerar una sucesión y en Twitter la han comentado y no he visto que calculen cualquier elemento en tiempo O(1) (salvo operaciones), por lo que no he podido resistirme.</p>
+<p>Básicamente la sucesión del reloj astronómico de Praga consiste en ir juntando dígitos de la sucesión:</p>
+<pre><code>1, 2, 3, 4, 3, 2, 1, 2, 3, 4, 3, 2, 1, 2, 3, 4, 3, 2, ...</code></pre>
+<p>De forma que se obtengan todos los naturales:</p>
+<pre><code>(1), (2), (3), (4), (3, 2), (1, 2, 3), (4, 3), ...</code></pre>
+<p>Lo interesante no es enumerarlos, sino poder alcanzar cualquier natural de forma eficiente, es decir <strong>¿cuál es la secuencia de dígitos para un N?</strong> tal que pueda ser muy grande y por tanto no haga falta obtener los anteriores.</p>
+<p>Como vamos a usar la raíz cuadrada de enteros, necesitamos:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Math.NumberTheory.Powers.Squares</span></code></pre></div>
+<p>Ahora, vemos que la sucesión de partida va de 6 en 6 dígitos (123432) y que dichos <strong>grupos</strong> suman 15, si consideramos los <strong>n</strong> tales que su secuencia termina exactamente en un grupo <strong>g</strong>, debe ser:</p>
+<pre><code>n (n + 1) / 2 = 15 g</code></pre>
+<p>de donde</p>
+<pre><code>n = (-1 + sqrt(120 g + 1)) / 2</code></pre>
+<p>es decir, debe existir algún <strong>z</strong> tal que</p>
+<pre><code>z^2 = 120 g + 1</code></pre>
+<p>Dado <strong>n</strong> una cota de <strong>g</strong> es</p>
+<pre><code>g = n (n + 1) / 30</code></pre>
+<p>y del cuadrado perfecto</p>
+<pre><code>z^2 = 4 n (n + 1) + 1</code></pre>
+<p>por lo que el número <strong>m</strong> que cierra grupo completo mas próximo por debajo a cierto <strong>n</strong> es (con coste constante)</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">lowM n <span class="fu">=</span> <span class="kw">let</span> maxz <span class="fu">=</span> <span class="kw">if</span> odd w <span class="kw">then</span> w <span class="kw">else</span> (w <span class="fu">-</span> <span class="dv">1</span>) <span class="kw">where</span> w <span class="fu">=</span> integerSquareRoot <span class="fu">$</span> <span class="dv">4</span> <span class="fu">*</span> n <span class="fu">*</span> (n <span class="fu">+</span> <span class="dv">1</span>) <span class="fu">+</span> <span class="dv">1</span>
+         <span class="kw">in</span>  head [m <span class="fu">|</span> z <span class="ot">&lt;-</span> [maxz, maxz <span class="fu">-</span> <span class="dv">2</span><span class="fu">..</span>], <span class="kw">let</span> (g, r) <span class="fu">=</span> (z <span class="fu">*</span> z <span class="fu">-</span> <span class="dv">1</span>) <span class="ot">`divMod`</span> <span class="dv">120</span>, r <span class="fu">==</span> <span class="dv">0</span>, <span class="kw">let</span> m <span class="fu">=</span> (z <span class="fu">-</span> <span class="dv">1</span>) <span class="ot">`div`</span> <span class="dv">2</span>, m <span class="fu">&lt;</span> n]</code></pre></div>
+<p>Por otro lado, para alcanzar un número <strong>n</strong> dado el último que cierra grupo <strong>m</strong>, debemos restar cierto número de grupos (que suman 15) y considerar los posibles restos 1, 3, 6, 10 o 13 (no hay otros para n&gt;10).</p>
+<p>Eso nos da la cabecera o inicio de la secuencia que buscamos:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">cabecera n <span class="fu">=</span> <span class="kw">let</span> m <span class="fu">=</span> lowM n
+                 j <span class="fu">=</span> sum [m <span class="fu">+</span> <span class="dv">1</span>, m <span class="fu">+</span> <span class="dv">2</span><span class="fu">..</span>n <span class="fu">-</span> <span class="dv">1</span>] <span class="co">-- salto hasta llegar a n</span>
+             <span class="kw">in</span>  <span class="kw">case</span> j <span class="ot">`mod`</span> <span class="dv">15</span> <span class="kw">of</span>
+                   <span class="dv">0</span>  <span class="ot">-&gt;</span> (<span class="dv">0</span>, <span class="dv">0</span>)
+                   <span class="dv">1</span>  <span class="ot">-&gt;</span> (<span class="dv">23432</span>, <span class="dv">14</span>)
+                   <span class="dv">3</span>  <span class="ot">-&gt;</span> (<span class="dv">3432</span>, <span class="dv">12</span>)
+                   <span class="dv">6</span>  <span class="ot">-&gt;</span> (<span class="dv">432</span>, <span class="dv">9</span>)
+                   <span class="dv">10</span> <span class="ot">-&gt;</span> (<span class="dv">32</span>, <span class="dv">5</span>)
+                   <span class="dv">13</span> <span class="ot">-&gt;</span> (<span class="dv">2</span>, <span class="dv">2</span>)
+                   _  <span class="ot">-&gt;</span> error <span class="st">&quot;bug!&quot;</span></code></pre></div>
+<p>Ahora, como queremos obtener la secuencia de números <strong>astronómicos</strong> ;P vamos a representarlos de forma compacta como el triplete <strong>(h, d, t)</strong> donde <strong>h</strong> es el prefijo, <strong>d</strong> el número de grupos enteros de en medio y <strong>t</strong> el sufijo.</p>
+<p>Ahora obtener el interior y la cola es trivial:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">praga <span class="dv">1</span> <span class="fu">=</span> (<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>)
+praga <span class="dv">2</span> <span class="fu">=</span> (<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">2</span>)
+praga <span class="dv">3</span> <span class="fu">=</span> (<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">3</span>)
+praga <span class="dv">4</span> <span class="fu">=</span> (<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">4</span>)
+praga <span class="dv">5</span> <span class="fu">=</span> (<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">32</span>)
+praga <span class="dv">6</span> <span class="fu">=</span> (<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">123</span>)
+praga <span class="dv">7</span> <span class="fu">=</span> (<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">43</span>)
+praga n <span class="fu">=</span> <span class="kw">let</span> (h, s) <span class="fu">=</span> cabecera n
+          <span class="kw">in</span>  <span class="kw">case</span> (n <span class="fu">-</span> s) <span class="ot">`divMod`</span> <span class="dv">15</span> <span class="kw">of</span>
+                (d, <span class="dv">0</span> ) <span class="ot">-&gt;</span> (h, d, <span class="dv">0</span>)
+                (d, <span class="dv">1</span> ) <span class="ot">-&gt;</span> (h, d, <span class="dv">1</span>)
+                (d, <span class="dv">3</span> ) <span class="ot">-&gt;</span> (h, d, <span class="dv">12</span>)
+                (d, <span class="dv">6</span> ) <span class="ot">-&gt;</span> (h, d, <span class="dv">123</span>)
+                (d, <span class="dv">10</span>) <span class="ot">-&gt;</span> (h, d, <span class="dv">1234</span>)
+                (d, <span class="dv">13</span>) <span class="ot">-&gt;</span> (h, d, <span class="dv">12343</span>)
+                _       <span class="ot">-&gt;</span> error <span class="st">&quot;bug!&quot;</span></code></pre></div>
+<p>Si queremos mostrarlos sin compactar:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">showPraga (h, d, t) <span class="fu">=</span> (<span class="kw">if</span> h <span class="fu">==</span> <span class="dv">0</span> <span class="kw">then</span> <span class="st">&quot;&quot;</span> <span class="kw">else</span> show h) <span class="fu">++</span> concat (replicate d <span class="st">&quot;123432&quot;</span>) <span class="fu">++</span> (<span class="kw">if</span> t <span class="fu">==</span> <span class="dv">0</span> <span class="kw">then</span> <span class="st">&quot;&quot;</span> <span class="kw">else</span> show t)</code></pre></div>
+<p>Ahora ya podemos obtener la secuencia de cualquier número <strong>astronómico</strong> en tiempo constante (operaciones en <code>Integer</code> no son constantes)</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> praga (<span class="dv">12345</span><span class="fu">^</span><span class="dv">543</span><span class="fu">+</span><span class="dv">127</span>)
+(<span class="dv">432</span>,<span class="dv">318840093960157628622853085683780590492647672185314832251591349782946086789365739474</span>
+<span class="dv">99458645353223523332399338144687361320512428743085526613700917724280566663878314870335800</span>
+<span class="dv">45133239819511094984206748593348106432277159586903470226003797954498327992309848186805312</span>
+<span class="dv">36234259966577401511567262413888193859008040219642935618470734949649073892973859225142478</span>
+<span class="dv">37095702336389746406199795908446782529307623307688619552253132543193618118041776941309182</span>
+<span class="dv">90707719595729427431824011801703283286782770202719108175215912329805496719890944711589523</span>
+<span class="dv">31128046303805261384392827219495105513827248678493945175038905523067804489002608599697849</span>
+<span class="dv">44165634151906949792002513874080083274981661108046037737174449129779257332819868431906179</span>
+<span class="dv">52889686251601521364534531673981614520293254372573553451578443259901143311679123857670923</span>
+<span class="dv">90390554496322920274707393113107383723588108197972568301952539120066499128101822451275711</span>
+<span class="dv">15473151349519511538755767541708586280856935344531828373233490957681593417731003045549281</span>
+<span class="dv">62846737135672429035178478789331032890519022788724960750000171961086975965437708140123055</span>
+<span class="dv">41735155310883412376665538349813285172551822995774799332803350747758813950917042154392994</span>
+<span class="dv">44017644627982678708234656884444733561525047299739568836875998638685881378638633807817015</span>
+<span class="dv">35084065756288759519483158115215458998099878942719025845939279478611074545467653741852375</span>
+<span class="dv">45244403995549938277611976583520829234161171238567792237010084376426443392703742802870506</span>
+<span class="dv">38712137905746657396122902048372250671803428015060424237630738385961554522778451615252327</span>
+<span class="dv">03633754963600279692392744938259422146757560902974014450952433281616013078543684163380154</span>
+<span class="dv">72063069756235946230581374810495813302891628643029540821204265598422166774955343816378021</span>
+<span class="dv">77866720118008707099780776349404523871776511196093672828466741306320072527233917492564673</span>
+<span class="dv">75279253990987153558006465010104874743763650814652138498937003182282672502834452166398974</span>
+<span class="dv">23038849578033692013008525444824470086212713768600749913837409430182616021180349340237147</span>
+<span class="dv">10599014415113962683829926560258629941173872488521125917263064958195209446978714565548023</span>
+<span class="dv">08363981957444256315022152008165055858329544037661113150441676961458934236400465549365205</span>
+<span class="dv">68321721776855864223224899695250789833925358950691281156863965406955685466527938842773438</span>
+<span class="dv">2</span>,<span class="dv">12343</span>)</code></pre></div>
+<p>Y ésto es todo!</p>
+<p><strong>NOTA</strong>, si <em>“limpiamos”</em> las ideas anteriores, podemos sacar una versión más compacta:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">praga n <span class="fu">=</span> <span class="kw">let</span> k <span class="fu">=</span> [<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>,<span class="dv">1</span>] <span class="fu">!!</span> fromIntegral ((n <span class="fu">-</span> <span class="dv">1</span>) <span class="ot">`mod`</span> <span class="dv">15</span>)
+              j <span class="fu">=</span> (<span class="dv">2</span> <span class="fu">*</span> n <span class="fu">*</span> k <span class="fu">-</span> <span class="dv">2</span> <span class="fu">*</span> n <span class="fu">-</span> k <span class="fu">*</span> k <span class="fu">+</span> k) <span class="ot">`div`</span> <span class="dv">2</span>
+              w <span class="fu">=</span> [(<span class="dv">0</span>,(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>)),(<span class="dv">1</span>,(<span class="dv">23432</span>,<span class="dv">14</span>,<span class="dv">1</span>)),(<span class="dv">3</span>,(<span class="dv">3432</span>,<span class="dv">12</span>,<span class="dv">12</span>)),(<span class="dv">6</span>,(<span class="dv">432</span>,<span class="dv">9</span>,<span class="dv">123</span>)),(<span class="dv">10</span>,(<span class="dv">32</span>,<span class="dv">5</span>,<span class="dv">1234</span>)),(<span class="dv">13</span>,(<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">12343</span>))]
+              <span class="dt">Just</span> (h, s, _) <span class="fu">=</span> lookup (j <span class="ot">`mod`</span> <span class="dv">15</span>) w
+              (d, r) <span class="fu">=</span> (n <span class="fu">-</span> s) <span class="ot">`divMod`</span> <span class="dv">15</span>
+              <span class="dt">Just</span> (_, _, t) <span class="fu">=</span> lookup r w
+          <span class="kw">in</span>  (h, d, t)</code></pre></div>
+<p>Los cambios son: 1. en lugar de iterar para sacar aquel <code>m</code> que cierra grupo, podemos usar directamente los restos módulo 15. 2. en lugar de sumar esos (como mucho 5) números, calculamos <code>j</code> directamente. 3. en lugar de usar <code>case</code>, usamos <code>lookup</code> y metemos en un único <code>w</code> los prefijos y sufijos.</p>
+
+<div id="disqus_thread"></div>
+<script>
+(function() {
+  var d = document, s = d.createElement('script');
+  s.src = '//josejuan-github-io.disqus.com/embed.js';
+  s.setAttribute('data-timestamp', +new Date());
+  (d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');ga('create', 'UA-3981685-5', 'auto');ga('send', 'pageview');
+        </script>
+    </body>
+</html>
