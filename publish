@@ -12,7 +12,7 @@ stack exec site build
 
 # Get previous files
 git fetch --all
-git checkout -b master --track origin/master
+git checkout master
 
 # Overwrite existing files with new files
 # cp -a _site/. .
