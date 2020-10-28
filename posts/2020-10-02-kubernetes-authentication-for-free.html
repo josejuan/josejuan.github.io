@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>josejuan - Kubernetes, authentication for free</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+    </head>
+    <body>
+        <div id="header">
+            <div id="logo">
+              <a href="../">josejuan <s>blog</s></a>
+            </div>
+            <div id="navigation">
+                <a href="../">Home</a>
+                <a href="../about.html">Acerca de</a>
+                <a href="../archive.html">Archivo</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <h1>Kubernetes, authentication for free</h1>
+
+            <div class="info">
+    Posted on October  2, 2020
+    
+        by josejuan
+    
+</div>
+
+<p style="font-size: 0.75em; color: gray"><b>Nota:</b> por brevedad y en general, cualquier afirmación en este <s>blog</s> <bold>no es</bold> absoluta; por lo que implícitamente contienen un: <i>"en mi opinión"</i>, <i>"seguramente"</i>, <i>"en general"</i>, etc. Agradezco de antemano cualquier corrección.</p>
+
+<h2 id="introducción">Introducción</h2>
+<p>En <a href="2020-10-01-kubernetes-una-vision-practica.html"><em>Kubernetes, una visión práctica</em></a> vimos como desplegar automáticamente una aplicación. <em>Kubernetes</em> nos permite además <em>decorarla</em> desde su definición en el <em>codebase</em> con cualquier artefacto que necesitemos. En este post veremos cómo añadir, <em>for free</em>, autenticación a nuestra plataforma.</p>
+<p>Para ésto <em>Keycloak</em> es una estupenda herramienta.</p>
+<h2 id="paso-1-personalizar-la-imagen-de-keycloak">Paso 1: personalizar la imagen de <em>keycloak</em></h2>
+<p>La imagen base de <em>keycloak</em> levanta una instancia pelada que hay que configurar, pero nosotros queremos que <strong>todo esté automatizado</strong>, por lo que añadiremos un <em>script</em> que luego usaremos en el <em>lifecycle</em> de <em>kubernetes</em>. La creación de la imagen puede ser:</p>
+<div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">FROM</span> jboss/keycloak<span class="ch">:11</span>.<span class="fl">0.2</span>
+<span class="kw">COPY</span> ./images/keycloak/keycloak-set-up /keycloak-set-up
+<span class="fu">USER</span> root
+RUN chmod +x /keycloak-set-up
+RUN sed -i <span class="st">'s/jboss.http.port:[0-9]\+/jboss.http.port:8081/g'</span> /opt/jboss/keycloak/standalone/configuration/standalone-ha.xml
+<span class="fu">USER</span> <span class="dv">1000</span></code></pre></div>
+<p>Donde añadimos nuestro <em>script</em>, le damos permiso de ejecución y ya de paso nos ponemos un puerto más cómodo en el <em>JBoss</em>.</p>
+<p>Vale, con eso ya tenemos una imagen con nuestro <em>script</em>.</p>
+<h2 id="paso-2-hacer-el-build-de-la-imagen">Paso 2: hacer el <em>build</em> de la imagen</h2>
+<p>Igual que hacíamos con nuestro servidor, debemos generar la imagen a partir del <em>Dockerfile</em> creado, así, añadimos a la <em>pipe</em> del <em>Action</em> de <em>GitHub</em>:</p>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="kw">-</span> <span class="fu">name:</span><span class="at"> Build and push keycloak</span>
+  <span class="fu">uses:</span><span class="at"> docker/build-push-action@v2</span>
+  <span class="fu">with:</span>
+    <span class="fu">context:</span><span class="at"> .</span>
+    <span class="fu">file:</span><span class="at"> ./images/keycloak/Dockerfile</span>
+    <span class="fu">platforms:</span><span class="at"> linux/amd64</span>
+    <span class="fu">push:</span><span class="at"> true</span>
+    <span class="fu">tags:</span><span class="at"> geodesicsoflearning/gol:keycloak-${{ steps.ebranch.outputs.branch }}</span></code></pre></div>
+<p>Vale, ya tenemos la imagen creada y subida a nuestro repositorio.</p>
+<h2 id="paso-3-añadir-keycloak-a-nuestro-despliegue">Paso 3: añadir <em>keycloak</em> a nuestro despliegue</h2>
+<p>Añadir un <em>pod</em> con <em>keycloack</em> es modificar nuestra definición de despliegue <em>kubernetes</em> añadiendo:</p>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">apiVersion:</span><span class="at"> v1</span>
+<span class="fu">kind:</span><span class="at"> Pod</span>
+<span class="fu">metadata:</span>
+  <span class="fu">namespace:</span><span class="at"> gol-main</span>
+  <span class="fu">name:</span><span class="at"> keycloak</span>
+  <span class="fu">labels:</span>
+    <span class="fu">type:</span><span class="at"> keycloak</span>
+<span class="fu">spec:</span>
+  <span class="fu">imagePullSecrets:</span>
+    <span class="kw">-</span> <span class="fu">name:</span><span class="at"> regcred</span>
+  <span class="fu">containers:</span>
+    <span class="kw">-</span> <span class="fu">name:</span><span class="at"> keycloak</span>
+      <span class="fu">image:</span><span class="at"> geodesicsoflearning/gol:keycloak-main</span>
+      <span class="fu">imagePullPolicy:</span><span class="at"> Always</span>
+      <span class="fu">env:</span>
+        <span class="kw">-</span> <span class="fu">name:</span><span class="at"> KEYCLOAK_USER</span>
+          <span class="fu">value:</span><span class="at"> </span><span class="st">&quot;admin&quot;</span>
+        <span class="kw">-</span> <span class="fu">name:</span><span class="at"> KEYCLOAK_PASSWORD</span>
+          <span class="fu">value:</span><span class="at"> </span><span class="st">&quot;SECRET_KEYCLOAK_ADMIN_PASSWORD&quot;</span>
+        <span class="kw">-</span> <span class="fu">name:</span><span class="at"> PROXY_ADDRESS_FORWARDING</span>
+          <span class="fu">value:</span><span class="at"> </span><span class="st">&quot;true&quot;</span>
+      <span class="fu">lifecycle:</span>
+        <span class="fu">postStart:</span>
+          <span class="fu">exec:</span>
+            <span class="fu">command:</span><span class="at"> </span><span class="kw">[</span><span class="st">&quot;/bin/bash&quot;</span><span class="kw">,</span> <span class="st">&quot;-c&quot;</span><span class="kw">,</span> <span class="st">&quot;/keycloak-set-up&quot;</span><span class="kw">]</span>
+      <span class="fu">ports:</span>
+        <span class="kw">-</span> <span class="fu">name:</span><span class="at"> http</span>
+          <span class="fu">containerPort:</span><span class="at"> 8081</span>
+      <span class="fu">readinessProbe:</span>
+        <span class="fu">httpGet:</span>
+          <span class="fu">path:</span><span class="at"> /auth/realms/master</span>
+          <span class="fu">port:</span><span class="at"> 8081</span></code></pre></div>
+<p>Hemos creado un único <em>secret</em>, el del password por defecto al levantarse el <em>pod</em>.</p>
+<p>Vale, ya será desplegado <em>keycloak</em> en nuestra nube.</p>
+<h2 id="paso-4-establecer-configuración-inicial">Paso 4: establecer configuración inicial</h2>
+<p>Queremos cargar automáticamente en <em>keycloak</em> la configuración inicial que precisemos, en este caso un <em>Client</em> de autenticación. Habíamos comentado que lo haríamos en el <em>script</em> <code>keycloak-set-up</code> usando el comando <em>kcreg.sh</em>:</p>
+<pre class="shell"><code>#!/bin/bash
+
+# from deployment secrets
+# KEYCLOAK_USER=...
+# KEYCLOAK_PASSWORD=...
+
+KREG=/opt/jboss/keycloak/bin/kcreg.sh
+KEYCLOAK_URL=http://keycloak:8081/auth
+KEYCLOAK_REALM=master
+
+# wait for keycloak available
+while [ &quot;`curl -s -w %{http_code} -o /dev/null $KEYCLOAK_URL/`&quot; != &quot;200&quot; ]
+do
+  sleep 5
+  echo &quot;`date`: waiting for keycloak...&quot; &gt;&gt; /tmp/keycloak-set-up.log
+done
+echo &quot;`date`: keycloak ready&quot; &gt;&gt; /tmp/keycloak-set-up.log
+
+$KREG config credentials --server $KEYCLOAK_URL --realm $KEYCLOAK_REALM --user $KEYCLOAK_USER --password $KEYCLOAK_PASSWORD
+
+echo &quot;`date`: logged in&quot; &gt;&gt; /tmp/keycloak-set-up.log
+
+$KREG create -f - &lt;&lt;EOF
+{
+  &quot;clientId&quot; : &quot;golauth&quot;,
+  &quot;surrogateAuthRequired&quot; : false,
+  &quot;enabled&quot; : true,
+  &quot;alwaysDisplayInConsole&quot; : false,
+  &quot;clientAuthenticatorType&quot; : &quot;client-secret&quot;,
+  &quot;redirectUris&quot; : [ &quot;http://www.keycloak.config.authentication.site&quot; ],
+  &quot;webOrigins&quot; : [ ],
+  &quot;notBefore&quot; : 0,
+  &quot;bearerOnly&quot; : false,
+  &quot;consentRequired&quot; : false,
+  &quot;standardFlowEnabled&quot; : true,
+  &quot;implicitFlowEnabled&quot; : false,
+  &quot;directAccessGrantsEnabled&quot; : true,
+  &quot;serviceAccountsEnabled&quot; : false,
+  &quot;publicClient&quot; : true,
+  &quot;frontchannelLogout&quot; : false,
+  &quot;protocol&quot; : &quot;openid-connect&quot;,
+  &quot;attributes&quot; : {
+    &quot;saml.assertion.signature&quot; : &quot;false&quot;,
+    &quot;saml.force.post.binding&quot; : &quot;false&quot;,
+    &quot;saml.multivalued.roles&quot; : &quot;false&quot;,
+    &quot;saml.encrypt&quot; : &quot;false&quot;,
+    &quot;saml.server.signature&quot; : &quot;false&quot;,
+    &quot;saml.server.signature.keyinfo.ext&quot; : &quot;false&quot;,
+    &quot;exclude.session.state.from.auth.response&quot; : &quot;false&quot;,
+    &quot;saml_force_name_id_format&quot; : &quot;false&quot;,
+    &quot;saml.client.signature&quot; : &quot;false&quot;,
+    &quot;tls.client.certificate.bound.access.tokens&quot; : &quot;false&quot;,
+    &quot;saml.authnstatement&quot; : &quot;false&quot;,
+    &quot;display.on.consent.screen&quot; : &quot;false&quot;,
+    &quot;saml.onetimeuse.condition&quot; : &quot;false&quot;
+  },
+  &quot;authenticationFlowBindingOverrides&quot; : { },
+  &quot;fullScopeAllowed&quot; : true,
+  &quot;nodeReRegistrationTimeout&quot; : -1,
+  &quot;defaultClientScopes&quot; : [ &quot;web-origins&quot;, &quot;role_list&quot;, &quot;profile&quot;, &quot;roles&quot;, &quot;email&quot; ],
+  &quot;optionalClientScopes&quot; : [ ]
+}
+EOF
+
+echo &quot;`date`: done&quot; &gt;&gt; /tmp/keycloak-set-up.log</code></pre>
+<p>Primero esperamos que se levante <em>JBoss</em> con <em>keycloak</em>, luego registramos las credenciales del usuario <em>admin</em> y finalmente inyectamos la configuración del <em>Client</em> que queremos.</p>
+<p>¿Cómo generamos o extraemos una configuración desde <em>keycloak</em>?</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">/opt/jboss/keycloak/bin/kcreg.sh</span> config credentials --server <span class="va">$KEYCLOAK_URL</span> --realm <span class="va">$KEYCLOAK_REALM</span> --user <span class="va">$KEYCLOAK_USER</span> --password <span class="va">$KEYCLOAK_PASSWORD</span>
+<span class="ex">Logging</span> into http://localhost:8081/auth/ as user admin of realm master
+$ <span class="ex">/opt/jboss/keycloak/bin/kcreg.sh</span> get golauth
+<span class="kw">{</span>
+  <span class="st">&quot;id&quot;</span> <span class="bu">:</span> <span class="st">&quot;xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&quot;</span>,
+  <span class="st">&quot;clientId&quot;</span> <span class="bu">:</span> <span class="st">&quot;golauth&quot;</span>,
+  <span class="st">&quot;surrogateAuthRequired&quot;</span> <span class="bu">:</span> false,
+  <span class="st">&quot;enabled&quot;</span> <span class="bu">:</span> true,
+  <span class="st">&quot;alwaysDisplayInConsole&quot;</span> <span class="bu">:</span> false,
+<span class="ex">...</span></code></pre></div>
+<p>En otros escenarios y en entornos productivos que requieran copias de seguridad o persistencia, consultar:</p>
+<ol style="list-style-type: decimal">
+<li><a href="https://www.keycloak.org/docs/latest/server_admin/index.html#_export_import">Export/Import</a></li>
+<li><a href="https://hub.docker.com/r/jboss/keycloak">jboss/keycloak</a> (ver bases de datos)</li>
+</ol>
+<p>Vale, ya podemos configurar <strong>declarativamente</strong> nuestro <em>keycloak</em>.</p>
+<h2 id="paso-5-inyectar-los-secret-al-despliegue">Paso 5: inyectar los <em>secret</em> al despliegue</h2>
+<p>Como los <em>secrets</em> no deben estar en plano en el código, debemos inyectar como hacíamos al ejecutar el comando. Actualizando también la <em>pipe</em> cambiando:</p>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="kw">-</span> <span class="fu">name:</span><span class="at"> Kubernetes apply</span>
+  <span class="fu">run:</span><span class="at"> |</span>
+    cat cloud/$<span class="kw">{</span>GITHUB_REF<span class="co">##*/}_cloud.yml | \</span>
+      sed 's/DOCKER_CONFIGJSON/${{ secrets.DOCKER_CONFIGJSON <span class="kw">}</span>}/<span class="st">' | \</span>
+<span class="st">      sed '</span>s/SECRET_KEYCLOAK_ADMIN_PASSWORD/$<span class="kw">{</span>{ secrets.KEYCLOAK_ADMIN_PASSWORD <span class="kw">}</span>}/<span class="st">' | \</span>
+<span class="st">      ssh cloud '</span>microk8s kubectl apply -f -<span class="st">'</span></code></pre></div>
+<p>Ahora sí, se despliega el servidor <em>keycloak</em> y se pone en marcha todo lo anterior.</p>
+<p>Vale, ya tenemos <em>keycloak</em> desplegado y autoconfigurado.</p>
+<h2 id="paso-6-configurar-los-servicios-para-consultar-a-keycloak">Paso 6: configurar los servicios para consultar a <em>keycloak</em></h2>
+<p><em>keycloak</em> tiene múltiples clientes para los servicios que requieran autenticar, las aplicaciones que requieran autenticarse, proveedores de autenticación (<em>GitHub</em>, <em>Google</em>, <em>Twitter</em>, <em>Facebook</em>, …). Por ejemplo en <em>Java</em> con <em>Spring Boot</em> viene a ser suficiente con añadir las dependencias:</p>
+<div class="sourceCode"><pre class="sourceCode xml"><code class="sourceCode xml">        <span class="kw">&lt;dependency&gt;</span>
+            <span class="kw">&lt;groupId&gt;</span>org.keycloak<span class="kw">&lt;/groupId&gt;</span>
+            <span class="kw">&lt;artifactId&gt;</span>keycloak-spring-boot-starter<span class="kw">&lt;/artifactId&gt;</span>
+            <span class="kw">&lt;version&gt;</span>11.0.2<span class="kw">&lt;/version&gt;</span>
+        <span class="kw">&lt;/dependency&gt;</span>
+    <span class="er">&lt;</span>/dependencies&gt;
+    <span class="kw">&lt;dependencyManagement&gt;</span>
+        <span class="kw">&lt;dependencies&gt;</span>
+            <span class="kw">&lt;dependency&gt;</span>
+                <span class="kw">&lt;groupId&gt;</span>org.keycloak.bom<span class="kw">&lt;/groupId&gt;</span>
+                <span class="kw">&lt;artifactId&gt;</span>keycloak-adapter-bom<span class="kw">&lt;/artifactId&gt;</span>
+                <span class="kw">&lt;version&gt;</span>11.0.2<span class="kw">&lt;/version&gt;</span>
+                <span class="kw">&lt;type&gt;</span>pom<span class="kw">&lt;/type&gt;</span>
+                <span class="kw">&lt;scope&gt;</span>import<span class="kw">&lt;/scope&gt;</span>
+            <span class="kw">&lt;/dependency&gt;</span>
+        <span class="kw">&lt;/dependencies&gt;</span>
+    <span class="kw">&lt;/dependencyManagement&gt;</span></code></pre></div>
+<p>Y en la configuración de <em>spring boot</em> algo como:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">keycloak.security-constraints</span>[0].auth-roles[0] = user
+<span class="ex">keycloak.security-constraints</span>[0].security-collections[0].patterns[0] = /v1/*
+
+<span class="ex">keycloak.realm</span> = master
+<span class="ex">keycloak.auth-server-url</span> = http://keycloak:8081/auth/
+<span class="ex">keycloak.ssl-required</span> = external
+<span class="ex">keycloak.resource</span> = golauth
+<span class="ex">keycloak.public-client</span> = true
+<span class="ex">keycloak.confidential-port</span> = 0
+<span class="ex">keycloak.use-resource-role-mappings</span> = true
+<span class="ex">keycloak.enabled</span> = true</code></pre></div>
+<p>Que dado que nuestro <em>keycloak</em> va implícita en nuestro despliegue puede ir fija en el <em>codebase</em>.</p>
+<p>Vale, ya tenemos securizado nuestros servicios.</p>
+<h2 id="paso-6-probar-la-autenticación">Paso 6: probar la autenticación</h2>
+<p>Probemos primero que el servicio está protegido:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">curl</span> -v http://localhost:8080/v1/status
+<span class="ex">...</span>
+<span class="op">&lt;</span> <span class="ex">HTTP/1.1</span> 302
+<span class="ex">...</span>
+<span class="op">&lt;</span> <span class="ex">Location</span>: http://keycloak:8081/auth/realms/master/protocol/openid-connect/...
+<span class="ex">...</span></code></pre></div>
+<p>Bien, redirige a la url de autenciación. Ahora veamos si autenticando entramos:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="va">TOKEN=</span><span class="kw">`</span><span class="ex">curl</span> -s -X POST <span class="st">&quot;http://keycloak:8081/auth/realms/master/protocol/openid-connect/token&quot;</span> \
+    -H <span class="st">&quot;Content-Type: application/x-www-form-urlencoded&quot;</span> \
+    -d <span class="st">&quot;username=pepito&quot;</span> \
+    -d <span class="st">&quot;password=grillo&quot;</span> \
+    -d <span class="st">'grant_type=password'</span> \
+    -d <span class="st">'client_id=golauth'</span> <span class="kw">|</span> <span class="ex">jq</span> -r .access_token<span class="kw">`</span>
+
+$ <span class="ex">curl</span> -s -H <span class="st">&quot;Authentication: Bearer </span><span class="va">$TOKEN</span><span class="st">&quot;</span> http://apiserver:8080/v1/status
+<span class="ex">local-env</span></code></pre></div>
+<p>Y ya está, tenemos autenticación y autorización con todo el soporte de <em>keycloak</em>.</p>
+<h2 id="referencias">Referencias</h2>
+<ul>
+<li><a href="https://www.adictosaltrabajo.com/2016/09/28/integracion-de-keycloak-con-angularjs-y-spring-boot/">Integración de Keycloak con AngularJS y Spring Boot</a></li>
+<li><a href="https://www.keycloak.org/docs-api/5.0/rest-api/index.html">Keycloak REST API</a></li>
+<li><a href="https://www.keycloak.org/docs/4.8/authorization_services/">Keycloak Authorization Services</a></li>
+<li><a href="https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.1/html/securing_applications_and_services_guide/client_registration_cli">Keycloak Client Registration CLI</a></li>
+</ul>
+
+<div id="disqus_thread"></div>
+<script>
+(function() {
+  var d = document, s = d.createElement('script');
+  s.src = '//josejuan-github-io.disqus.com/embed.js';
+  s.setAttribute('data-timestamp', +new Date());
+  (d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');ga('create', 'UA-3981685-5', 'auto');ga('send', 'pageview');
+        </script>
+    </body>
+</html>
