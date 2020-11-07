@@ -33,7 +33,7 @@
 
 <h2 id="introducción">Introducción</h2>
 <p>En <a href="2020-10-01-kubernetes-una-vision-practica.html"><em>Kubernetes, una visión práctica</em></a> vimos como desplegar automáticamente una aplicación. <em>Kubernetes</em> nos permite además <em>decorarla</em> desde su definición en el <em>codebase</em> con cualquier artefacto que necesitemos. En este post veremos cómo añadir, <em>for free</em>, autenticación a nuestra plataforma.</p>
-<p>Para ésto <em>Keycloak</em> es una estupenda herramienta.</p>
+<p>Para ésto <a href="https://www.keycloak.org/"><em>Keycloak</em></a> es una estupenda herramienta.</p>
 <h2 id="paso-1-personalizar-la-imagen-de-keycloak">Paso 1: personalizar la imagen de <em>keycloak</em></h2>
 <p>La imagen base de <em>keycloak</em> levanta una instancia pelada que hay que configurar, pero nosotros queremos que <strong>todo esté automatizado</strong>, por lo que añadiremos un <em>script</em> que luego usaremos en el <em>lifecycle</em> de <em>kubernetes</em>. La creación de la imagen puede ser:</p>
 <div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">FROM</span> jboss/keycloak<span class="ch">:11</span>.<span class="fl">0.2</span>
@@ -53,7 +53,7 @@ RUN sed -i <span class="st">'s/jboss.http.port:[0-9]\+/jboss.http.port:8081/g'</
     <span class="fu">file:</span><span class="at"> ./images/keycloak/Dockerfile</span>
     <span class="fu">platforms:</span><span class="at"> linux/amd64</span>
     <span class="fu">push:</span><span class="at"> true</span>
-    <span class="fu">tags:</span><span class="at"> geodesicsoflearning/gol:keycloak-${{ steps.ebranch.outputs.branch }}</span></code></pre></div>
+    <span class="fu">tags:</span><span class="at"> myrepo/gol:keycloak-${{ steps.ebranch.outputs.branch }}</span></code></pre></div>
 <p>Vale, ya tenemos la imagen creada y subida a nuestro repositorio.</p>
 <h2 id="paso-3-añadir-keycloak-a-nuestro-despliegue">Paso 3: añadir <em>keycloak</em> a nuestro despliegue</h2>
 <p>Añadir un <em>pod</em> con <em>keycloack</em> es modificar nuestra definición de despliegue <em>kubernetes</em> añadiendo:</p>
@@ -69,7 +69,7 @@ RUN sed -i <span class="st">'s/jboss.http.port:[0-9]\+/jboss.http.port:8081/g'</
     <span class="kw">-</span> <span class="fu">name:</span><span class="at"> regcred</span>
   <span class="fu">containers:</span>
     <span class="kw">-</span> <span class="fu">name:</span><span class="at"> keycloak</span>
-      <span class="fu">image:</span><span class="at"> geodesicsoflearning/gol:keycloak-main</span>
+      <span class="fu">image:</span><span class="at"> myrepo/gol:keycloak-main</span>
       <span class="fu">imagePullPolicy:</span><span class="at"> Always</span>
       <span class="fu">env:</span>
         <span class="kw">-</span> <span class="fu">name:</span><span class="at"> KEYCLOAK_USER</span>
