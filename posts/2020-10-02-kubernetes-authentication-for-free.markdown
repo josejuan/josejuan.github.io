@@ -8,7 +8,7 @@ tags: software deployment
 
 En <a href="2020-10-01-kubernetes-una-vision-practica.html">*Kubernetes, una visión práctica*</a> vimos como desplegar automáticamente una aplicación. *Kubernetes* nos permite además *decorarla* desde su definición en el *codebase* con cualquier artefacto que necesitemos. En este post veremos cómo añadir, *for free*, autenticación a nuestra plataforma.
 
-Para ésto *Keycloak* es una estupenda herramienta.
+Para ésto <a href="https://www.keycloak.org/">*Keycloak*</a> es una estupenda herramienta.
 
 ## Paso 1: personalizar la imagen de *keycloak*
 
@@ -39,7 +39,7 @@ Igual que hacíamos con nuestro servidor, debemos generar la imagen a partir del
     file: ./images/keycloak/Dockerfile
     platforms: linux/amd64
     push: true
-    tags: geodesicsoflearning/gol:keycloak-${{ steps.ebranch.outputs.branch }}
+    tags: myrepo/gol:keycloak-${{ steps.ebranch.outputs.branch }}
 ```
 
 Vale, ya tenemos la imagen creada y subida a nuestro repositorio.
@@ -61,7 +61,7 @@ spec:
     - name: regcred
   containers:
     - name: keycloak
-      image: geodesicsoflearning/gol:keycloak-main
+      image: myrepo/gol:keycloak-main
       imagePullPolicy: Always
       env:
         - name: KEYCLOAK_USER
