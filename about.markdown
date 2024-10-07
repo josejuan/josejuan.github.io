@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Acerca de josejuan ~blog~
+title: Acerca de
 permalink: /about/
 ---
 
