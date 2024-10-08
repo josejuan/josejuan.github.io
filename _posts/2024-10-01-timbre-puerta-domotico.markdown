@@ -49,58 +49,63 @@ de bajo a alto (el pin está invertido en este caso):
 ```python
 import network
 import time
-from machine import Pin
+from machine import Pin, Timer
+import urequests
 
-ssid = '{nombre de tu red wifi}'
-password = '{password de tu red wifi}'
-ip_estatica = '{ip que asignas a este dispositivo}'
-mascara_subred = '{máscara de red}'
-puerta_enlace = '{puerta de enlace}'
-dns = '{dns si lo necesitas}'
+net_ssid = 'ZZZZ'
+net_pass = 'xxxxxx'
+net_ipst = '192.168.110.201'
+net_mask = '255.255.255.0'
+net_gate = '192.168.110.1'
+net__dns = '8.8.8.8'
 
 station = network.WLAN(network.STA_IF)
 station.active(True)
-station.ifconfig((ip_estatica, mascara_subred, puerta_enlace, dns))
-station.connect(ssid, password)
+station.ifconfig((net_ipst, net_mask, net_gate, net__dns))
+station.connect(net_ssid, net_pass)
 
-while not station.isconnected():
-    time.sleep(1)
+def checkConnection(msg):
+  if not station.isconnected():
+    station.connect(net_ssid, net_pass)
+    for i in range(0, 60):
+      if station.isconnected():
+        break
+      time.sleep(1)
+    if not station.isconnected():
+      time.sleep(300)
+      machine.reset()
+    print("Conectado a WiFi (" + msg + "):", station.ifconfig())
 
-print("Conectado a WiFi:", station.ifconfig())
+checkConnection("boot")
 
 pulsador = Pin(2, Pin.IN, Pin.PULL_UP)
 
-import urequests
+def send(url):
+  respuesta = urequests.get("http://192.168.0.2/" + url)
+  respuesta.close()
 
-pulsado = False
-n = 0
+def sendStatus(value):
+  send("timbre_status?v=" + value)
+
+tk = Timer(-1)
+
+def dingDong():
+  send("timbre")
+  print("DING!")
+
+def gpioHandler(pin):
+  global sk
+  if pin.value() == 0:
+    tk.init(period=50, mode=Timer.ONE_SHOT, callback=lambda t: dingDong())
+  else:
+    tk.deinit()
+
+pulsador.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=gpioHandler)
+
 while True:
-    # si la wifi se apaga, reintentará conectar cada 30s
-    if not station.isconnected():
-        print('Reconectando Wifi')
-        station.connect(ssid, password)
-        time.sleep(30)
-        
-    if pulsador.value() == 0:
-        if not pulsado:
-            pulsado = True
-            try:
-                print("ding dong!")
-                respuesta = urequests.get("http://192.168.0.2/timbre")
-                respuesta.close()
-                print("ok")
-            except Exception as ex:
-                print(ex)
-    else:
-        pulsado = False
-    time.sleep(0.1)
-    
-    # cada 5 minutos, envía señal de que está vivo
-    n = n + 1
-    if n % 3000 == 0:
-        print('Status')
-        respuesta = urequests.get("http://192.168.0.2/timbre_status")
-        respuesta.close()
+  checkConnection("reconnect")
+  sendStatus("alive")
+  time.sleep(60)
 ```
 
 ### HTPC
