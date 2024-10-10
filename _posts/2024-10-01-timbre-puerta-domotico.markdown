@@ -50,6 +50,7 @@ de bajo a alto (el pin está invertido en este caso):
 import network
 import time
 from machine import Pin, Timer
+import machine
 import urequests
 
 net_ssid = 'ZZZZ'
@@ -59,52 +60,61 @@ net_mask = '255.255.255.0'
 net_gate = '192.168.110.1'
 net__dns = '8.8.8.8'
 
+server = 'http://192.168.0.2'
+
 station = network.WLAN(network.STA_IF)
 station.active(True)
 station.ifconfig((net_ipst, net_mask, net_gate, net__dns))
 station.connect(net_ssid, net_pass)
 
-def checkConnection(msg):
+def send(url):
+  respuesta = urequests.get(url)
+  respuesta.close()
+
+def sendTimbre():
+  send(f'{server}/timbre')
+
+def sendStatus(status):
+  send(f'{server}/timbre_status?v={status}')
+
+def checkConnection(status):
   if not station.isconnected():
+    print('Intentando conectar...')
     station.connect(net_ssid, net_pass)
     for i in range(0, 60):
+      print('Intento', i)
       if station.isconnected():
         break
       time.sleep(1)
     if not station.isconnected():
-      time.sleep(300)
+      print('No conectado, esperando para reset')
+      station.disconnect()
+      station.active(False)
+      machine.lightsleep(300000) # deepsleep requiere puentear RST~D0
+      print('Reseting')
       machine.reset()
-    print("Conectado a WiFi (" + msg + "):", station.ifconfig())
+    print('Reconectado a WiFi')
+    sendStatus(status)
 
-checkConnection("boot")
+checkConnection('boot')
+sendStatus('ready')
 
 pulsador = Pin(2, Pin.IN, Pin.PULL_UP)
 
-def send(url):
-  respuesta = urequests.get("http://192.168.0.2/" + url)
-  respuesta.close()
-
-def sendStatus(value):
-  send("timbre_status?v=" + value)
-
 tk = Timer(-1)
-
-def dingDong():
-  send("timbre")
-  print("DING!")
 
 def gpioHandler(pin):
   global sk
   if pin.value() == 0:
-    tk.init(period=50, mode=Timer.ONE_SHOT, callback=lambda t: dingDong())
+    tk.init(period=50, mode=Timer.ONE_SHOT, callback=lambda t: sendTimbre())
   else:
     tk.deinit()
 
 pulsador.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=gpioHandler)
 
 while True:
-  checkConnection("reconnect")
-  sendStatus("alive")
+  checkConnection('checking')
+  sendStatus('alive')
   time.sleep(60)
 ```
 
