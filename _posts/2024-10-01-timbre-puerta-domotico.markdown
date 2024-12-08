@@ -60,7 +60,7 @@ net_mask = '255.255.255.0'
 net_gate = '192.168.110.1'
 net__dns = '8.8.8.8'
 
-server = 'http://192.168.0.2'
+server = 'http://192.168.110.2'
 
 station = network.WLAN(network.STA_IF)
 station.active(True)
