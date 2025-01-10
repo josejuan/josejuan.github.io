@@ -23,7 +23,7 @@ email: blog@computer-mind.com
 description: >- # this means to ignore newlines until "baseurl:"
   Un "no blog", cajón de sastre, en el que dejar algunos botones…
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://josejuan.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: __josejuan__
 github_username:  josejuan
 
