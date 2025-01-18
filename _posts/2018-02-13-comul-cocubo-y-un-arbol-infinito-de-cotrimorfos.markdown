@@ -146,7 +146,7 @@ cotrimorficos = grow cubo
 
 ## Obteniendo todos los números trimórficos
 
-El árbol anterior nos sirve para poder buscar eficientemente sobre todo el espacio de los trimórficos, por ejemplo podríamos buscar aquellos que **no sean** prefijos (es decir, son nodos terminales), podríamos buscar trimórficos con ciertas propiedades (ej. contengan ciertos dígitos), etc... Pero nos piden enumerarlos, una forma es recorrer en profundidad, por ejemplo:
+El árbol anterior nos sirve para poder buscar eficientemente sobre todo el espacio de los trimórficos, por ejemplo podríamos buscar aquellos que **no sean** prefijos (es decir, son nodos terminales), podríamos buscar trimórficos con ciertas propiedades (ej. contengan ciertos dígitos), etc... Pero nos piden enumerarlos, una forma es recorrer en anchura, por ejemplo:
 
 ```Haskell
 trimorfos :: (Read a, Show a, Integral a) => [a]
