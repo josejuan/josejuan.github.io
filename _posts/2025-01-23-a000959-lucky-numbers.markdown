@@ -1,0 +1,105 @@
+---
+layout: post
+title: A000959 Lucky Numbers
+author: josejuan
+categories: algorithms
+---
+
+Hace ya más de siete años que resolvimos un bonito problema, <a href="/algorithms/2017/01/05/zipped-finger-tree.html">enumerar los números de la suerte</a>. Dicha serie corresponde con la entrada <a href="https://oeis.org/A000959">A000959</a> de la base de datos de series numéricas <a href="https://oeis.org">OEIS</a>. No me había fijado que, al menos de las que aparecen ahí, la nuestra es la implementación, con diferencia, más rápida para generarlos. Así que revisitaremos el algoritmo y sugeriremos una entrada en **OEIS**.
+
+## Números de la suerte y ciclos acumulados
+
+Generar los números de la suerte, consiste en, a partir de cierto número, dar saltos descartando números. Se empieza con todos los naturales, desde la posición 1 con saltos de a 2.
+
+```text
+V
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 ...
+  *   *   *   *    *     *     *     *
+```
+
+Ésto es lo mismo que decir que empezamos en el 1 y damos saltos según el siguiente conjunto cíclico `{2}`. Después de ir saltando desde el 1 usando esos saltos cíclicos, nos queda:
+
+```text
+  V
+1 3 5 7 9 11 13 15 17 ...
+```
+
+Y saltaremos a cada 3, es decir, *la última vez que saltamos 2 en realidad habremos saltado 2+3*, quedando:
+
+```text
+  V
+1 3 5 7 9 11 13 15 17 ...
+    *      *        *
+```
+
+Pero si nos fijamos, quiere decir, que a cada tres grupos de 2 de antes, saltaremos otro número, es decir, el ciclo es `{2, 4}`. ¿Porqué?
+
+El ciclo anterior era `{2}`, que tiene tamaño 1, como cada 3 hay que eliminar otro número, debemos repetir el ciclo 3 veces y queda `{2, 2, 2}` pero ese tercer número que se generará debemos eliminarlo, quedando el ciclo `{2, 4}`.
+
+Es decir, empezamos con `i = 1` (el índice del número de la suerte, siendo `i = 1, 2, 3, 4, ...`), inicialmente es `n{1} = 1` y `C{2} = {2}`, entonces el siguiente número de la suerte es `n{i} = n{i-1} + C{i-1}{i-1}`, en este caso `n{2} = n{1} + C{1}{1} = 1 + 2 = 3`.
+
+Para calcular `C{i}` hay que expandir `n{i}` veces `C{i-1}` y fusionar los saltos a cada `n{i}`.
+
+Para `i = 2` es `C{2} = {2, 4}` como hemos visto.
+
+Entonces, para `i = 3`, es `n{i} = n{i-1} + C{i-1}{i-1} = n{2} + C{2}{2} = 3 + 4 = 7`, entonces:
+
+```text
+C{3} = {2, 4, 2, 4, 2, 4 +2, 4, 2, 4, 2, 4, 2 +4}
+        1  2  3  4  5  6  7  8  9  10 11 12 13 14
+                          ^                    ^
+
+C{3} = {2, 4, 2, 4, 2, 6, 4, 2, 4, 2, 4, 6}
+```
+
+Entonces, para `i = 4`, es `n{4} = 7 + 2 = 9`, etc...
+
+## Generación del siguiente número de la suerte
+
+Dado un ciclo `C = {2, 4, 2, ... }` el `i-th` número de la suerte consiste en sumar a 1 desde la izquierda `i` veces.
+
+## Actualización del ciclo de incrementos
+
+Dado un ciclo `C` y el siguiente número de la suerte `n`, debemos repetir `C` `n` veces y fusionar los incrementos en las posiciones múltiplo de `n` con su anterior (como hemos hecho en los ejemplos anteriores).
+
+Pero puede optimizarse, por ejemplo `C{3}` tiene tamaño 12 y `n{4} = 9` por lo que en teoría el siguiente tamaño `C{4}` debería ser `12 * 9 = 108` pero como `LCM(12, 9)` es 36, significa que el mismo ciclo se repetirá 3 veces, por lo que en lugar de expandir hasta 108, es suficiente hacerlo hasta 36.
+
+## Optimización en Haskell o estructuras Okasaki
+
+Además de optimizar la longitud del ciclo, en Haskell o cualquier estructura Okasaki, quedará reutilizada, por lo que las `N` expansiones de una lista de incrementos, al clonarla múltiples veces, no ocupará memoria adicional.
+
+## Finger Tree
+
+Cuando tenemos un ciclo `C`, debemos ser capaces de alcanzar la posición `i-ésima` de forma eficiente, si los saltos de `C` son los "dedos" y los nodos intermedios los valores acumulados, representar `C` como un finger tree parece adecuado.
+
+## Zipper
+
+Cuando tenemos que actualizar `C` recorriéndolo para fusionar los incrementos en ciertas posiciones, debemos poder actuar sobre posiciones "cercanas", sin tener que reconstruir todo el árbol desde los dedos (posiciones que fusionamos) hasta la raíz, una forma eficiente de hacerlo es usar un zipper tree.
+
+## Limitando la expansión
+
+No es necesario que expandamos siempre el ciclo `C`, con él podemos generar números, mientras el incremento no debiera ser fusionado, y eso, para `C{i-1}` ocurre en la posición `i-2` (es decir, los incrementos en `C{i-1}` por encima de la posición `n{i}-2` podrían tener que ser ajustados).
+
+Por ejemplo, `C{3}` tiene tamaño 12, pero `n{4}=9`, por lo que solo podemos generar, con `C{3}` otros `n{4}-2 = 9-2 = 7` números de la suerte.
+
+Recíprocamente, si queremos generar números de la suerte hasta `K`, habrá que expandir hasta que `n{i} - 2 >= K`.
+
+## Comparación de eficiencia
+
+**O(n^2)**     David W. Wilson https://oeis.org/A000959/a000959.txt
+
+**O(n log n)** Using Zipped Finger Tree
+
+```text
+ n-th  lucky-n  O(n^2)   O(n log n)
+71918  999987    0.821     1.281
+136412 1999983   2.678     3.204
+198665 2999967   5.420     5.553
+259469 3999999   9.035     7.925
+319305 4999995  13.647     9.980
+378356 5999979  19.086    13.268
+436814 6999999  25.241    15.520
+494718 8000001  32.152    17.909
+552174 8999997  39.748    20.686
+609237 9999997  48.110    23.351
+```

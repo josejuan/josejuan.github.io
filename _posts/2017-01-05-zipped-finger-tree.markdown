@@ -190,7 +190,7 @@ expansión   nºs calculados  máx nº de la suerte    segundos    memoria (Kb)
       10       31.946.593      670.269.601          366,27     7.451.480
 ```
 
-Código completo de con algunos *speedups* y acotaciones en <a href="../images/numeros-de-la-suerte.hs">numeros-de-la-suerte.hs</a>.
+Código completo en <a href="/images/numeros-de-la-suerte.hs">numeros-de-la-suerte.hs</a>, y código completo optimizado con algunos *speedups* y acotaciones en <a href="/images/numeros-de-la-suerte-fastest.hs">numeros-de-la-suerte-fastest.hs</a>.
 
 Algunos números de la suerte:
 

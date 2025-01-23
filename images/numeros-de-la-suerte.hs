@@ -1,106 +1,127 @@
+{-# LANGUAGE BangPatterns #-}
 import System.Environment
-import GHC.Word
-import GHC.Int
+{-
 
-type AInt = Int32
-type BInt = Word16
+  Se generan y van refinando los saltos según se añaden números de la suerte
 
-data F = N { fN_ :: !AInt, fL :: !F, fR :: !F } | L { fV :: !BInt } deriving Show
-data H = LH !AInt !F | RH !AInt !F deriving Show
-data Z = Z !AInt !F [H] deriving Show
+    1: +2
+    3: +2+4
+    7: +2+4+2+4+2+6+4+2+4+2+4+6
+    9: +2+4+2+4+2+6+4+6+2+4+6+2+4+2+4+8+4+2+4+2+4+6+2+6+4+2+6+4+2+4+2+10
+    ...
 
+  una vez alcanzado cierto límite prefijado (el ciclo crece muy rápidamente)
+  ya no se expande el ciclo, sino que se va acortando, según se sigue refinando
+  por la acción de nuevos números de la suerte generados.
+
+  El proceso termina cuando ya no hay incrementos en el ciclo.
+
+    9:   [2,6,4,6,2,4,6,2,4,2,4,8,4,2,4,2,4,6,2,6,4,2,6,4,2,4,2,10]
+    13:  [6,4,6,2,4,6,6,2,4,8,4,2,4,2,4,6,2,6,6,6,4,2,4,2,10]
+    15:  [4,6,2,4,6,6,2,12,4,2,4,2,4,6,2,6,6,6,4,2,4,12]
+    ...
+    99:  [6,4,12]
+    105: [4,12]
+    111: [12]
+    115: []
+
+  Para concatenar y reagrupar eficientemente los saltos se usa una estructura
+  adhoc de un finger-tree que es recorrida con un zipper.
+
+-}
+
+-- el finger-tree
+data F = N { fN_ :: !Int    -- elementos que contiene
+           , fL  :: !F      -- izq
+           , fR :: !F }     -- der
+       | L { fV :: !Int }
+
+-- agujeros del zipper (guarda los elementos totales acumulados a la izq)
+data H = LH !Int !F         -- agujero a la izq
+       | RH !Int !F         -- agujero a la der
+
+-- zipper
+data Z = Z !Int -- elementos totales acumulados a la izq
+           !F   -- el nodo enfocado por el zipper
+           [H]  -- el historial (la cremallera) del camino actual
+
+-- une dos árboles
 (.^.) :: F ->F ->F
 l .^. r = N (fN l + fN r) l r
-{-# INLINE (.^.) #-}
 
-fN :: F ->AInt
+-- da el nº de elementos que contiene
+fN :: F ->Int
 fN (N n _ _) = n
 fN (L _    ) = 1
-{-# INLINE fN #-}
 
-isL :: F ->Bool
-isL (L _) = True
-isL _ = False
-{-# INLINE isL #-}
-
-index :: F ->AInt ->BInt
+-- devuelve el elemento i-ésimo (1, 2, 3, ...)
+index :: F ->Int ->Int
 (L n    ) `index` 1 = n
 (N _ l r) `index` i = if i <= fN l then l `index` i else r `index` (i - fN l)
-{-# INLINE index #-}
 
-toList :: F ->[BInt]
-toList (L n) = [n]
-toList (N _ l r) = toList l ++ toList r
-
-fromList :: [BInt] ->F
-fromList [] = error "bad list"
-fromList [a] = L a
-fromList xs = let (ls, rs) = splitAt (length xs `div` 2) xs
-              in  fromList ls .^. fromList rs
-
-unzipper (Z _ m _) = m
+-- dado un árbol inicia un zipper
 zipper m = Z 0 m []
 
+-- dado un zipper devuelve el árbol apuntado
+unzipper (Z _ m _) = m
+
+-- movimientos por el árbol usando el zipper
 goRight, goLeft, goUp :: Z ->Z
 goRight (Z a (N _ l r) zs) = Z (a + fN l) r (RH a l: zs)
-{-# INLINE goRight #-}
 goLeft  (Z a (N _ l r) zs) = Z  a         l (LH a r: zs)
-{-# INLINE goLeft #-}
 goUp    (Z _ r (RH a l: zs)) = Z a (l .^. r) zs
 goUp    (Z _ l (LH a r: zs)) = Z a (l .^. r) zs
 goUp  z@(Z _ _          [] ) = z
-{-# INLINE goUp #-}
 
-goto f i z@(Z a (N s l r) zs)
-  | a < i && i <= (a + fN l) = f i $ goLeft  z
-  | a < i && i <= (a +    s) = f i $ goRight z
-  | null zs                =               z
-  | otherwise              = f i $ goUp    z
-{-# INLINE goto #-}
+-- sabe llegar al nodo en cuestión y entonces aplica f
+goto f i = g
+  where g z@(Z a (N s l r) zs)
+          | a < i && i <= (a + fN l) = g $ goLeft  z
+          | a < i && i <= (a +    s) = g $ goRight z
+          | null zs                =             z
+          | otherwise              = g $ goUp    z
+        g z = f i z
 
-adjust :: AInt ->F ->F
+-- ajusta una lista de saltos uniendo los MOD(k)
+adjust :: Int ->F ->F
 adjust d m = (unzipper . doRemove lasti . zipper) m
   where lasti = fN m - fN m `mod` d
-        doRemove i (Z _ (L n) (RH a l: zs)) = doAdd n (i - 1) $ goUp (Z  a      l zs)
-        doRemove i (Z _ (L n) (LH a r: zs)) = doAdd n (i - 1) $ goUp (Z (a - 1) r zs)
-        doRemove i z                        = goto doRemove i z
-        doAdd n' i (Z a (L n)          zs ) = doRemove (i - d + 1) $ goUp $ Z a (L (n + n')) zs
-        doAdd n' i z                        = goto (doAdd n') i z
+        doAdd n' i (Z a (L n)          zs ) = goto doRemove (i - d + 1) $ goUp $ Z a (L (n + n')) zs
+        doRemove i (Z _ (L n) (RH a l: zs)) = goto (doAdd n) (i - 1) $ goUp (Z  a      l zs)
+        doRemove i (Z _ (L n) (LH a r: zs)) = goto (doAdd n) (i - 1) $ goUp (Z (a - 1) r zs)
+        doRemove i z = goto doRemove i z
 
-repeatF :: AInt ->F ->F
+-- repite un árbol n veces
+repeatF :: Int ->F ->F
 repeatF n f = case n `divMod` 2 of
                 (0, 1) ->f
                 (d, 0) ->t .^. t       where t = repeatF d f
                 (d, 1) ->t .^. t .^. f where t = repeatF d f
 
-expand :: AInt ->AInt ->F ->F
+-- expande un árbol sin superar un límite de elementos
+expand :: Int ->Int ->F ->F
 expand maxSize n f = adjust n $ repeatF (min (maxSize `div` s) r) f
   where s = fN f
         r = lcm s n `div` s
 
-lucky :: AInt ->AInt ->[AInt]
-lucky maxSize expansions = r 1 (fromList [2]) 1 expansions
-  where r n f i 0 = a n f i
-        r n f i z = n: r n' (expand maxSize n' f) (i + 1) (z - 1) where n' = n + fromIntegral (f `index` i)
-        a n f i = if i > fN f then [n] else n: a n' (adjust n' f) (i + 1) where n' = n + fromIntegral (f `index` i)
+-- calcula todos los lucky numbers haciendo n expansiones
+lucky :: Int ->Int ->[Int]
+lucky maxSize expansions = r 1 (L 2) 1 expansions
+  where r :: Int ->F ->Int ->Int ->[Int]
+        r n f i 0 = a n f i
+        r n f i z = n: r n' (expand maxSize n' f) (i + 1) (z - 1) where n' = n + f `index` i
+        a n f i = if i > fN f then [n] else n: a n' (adjust n' f) (i + 1) where n' = n + f `index` i
 
 main = do
-  [a, b, m] <-map read <$> getArgs
-  case a of
-    2 ->let xs = lucky m b
-        in  print (length xs - 1, last xs)
-    3 ->mapM_ print $ lucky m b
+  [x, m] <-map read <$> getArgs
+  mapM_ print $ lucky m x
 
 {-
 
-[josejuan@centella centella]$ stack exec -- ghc -O3 -fforce-recomp -auto-all -funbox-strict-fields ../numeros-de-la-suerte.5.hs
-[1 of 1] Compiling Main             ( ../numeros-de-la-suerte.5.hs, ../numeros-de-la-suerte.5.o )
-Linking ../numeros-de-la-suerte.5 ...
-[josejuan@centella centella]$ time -f "%e seg, %M Kb" ../numeros-de-la-suerte.5 2 9 130000000
-(2330996,41891851)
-18.44 seg, 487404 Kb
-[josejuan@centella centella]$ time -f "%e seg, %M Kb" ../numeros-de-la-suerte.5 3 9 130000000 | tail -n 10
-19.53 seg, 486448 Kb
+[josejuan@centella centella]$ stack exec -- ghc -O3 -fforce-recomp ../numeros-de-la-suerte.hs && time -f "%E, %M" ../numeros-de-la-suerte 9 1000000000 | tail
+[1 of 1] Compiling Main             ( ../numeros-de-la-suerte.hs, ../numeros-de-la-suerte.o )
+Linking ../numeros-de-la-suerte ...
+0:23.13, 550860
 41891685
 41891703
 41891727
@@ -113,3 +134,4 @@ Linking ../numeros-de-la-suerte.5 ...
 41891851
 
 -}
+
