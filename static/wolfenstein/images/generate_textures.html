@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Wall Textures</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+        }
+        .textures {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .texture {
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            image-rendering: pixelated;
+            width: 200px;
+            height: 200px;
+            border: 1px solid #333;
+        }
+        .instructions {
+            background-color: #e8f5e9;
+            border-left: 5px solid #4caf50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #388e3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Wall Texture Generator</h1>
+    
+    <div class="instructions">
+        <h2>Instructions:</h2>
+        <p>This page generates high-quality 256x256 textures for the raycasting game. Each texture represents a different wall type, plus floor and ceiling textures.</p>
+        <ol>
+            <li>Click "Generate Textures" to create the textures</li>
+            <li>Right-click on each texture and select "Save Image As..."</li>
+            <li>Save each texture with the name shown under it (wall1.png, wall2.png, floor.png, ceiling.png, etc.)</li>
+            <li>Place the saved textures in your images folder</li>
+        </ol>
+        <p><strong>Note:</strong> The floor and ceiling textures are used to add depth to the game with textured surfaces.</p>
+    </div>
+    
+    <button id="generateBtn">Generate Textures</button>
+    
+    <div class="textures" id="texturesContainer">
+        <!-- Textures will be inserted here -->
+    </div>
+    
+    <script>
+        // Texture generation settings
+        const texSize = 256; // 256x256 pixel textures
+        const wallTypes = 5; // We have 5 different wall types
+        const colors = [
+            { main: '#CC0000', accent: '#880000', name: 'Brick' }, // Red brick
+            { main: '#888888', accent: '#333333', name: 'Stone' }, // Stone
+            { main: '#A0522D', accent: '#654321', name: 'Wood' }, // Wood
+            { main: '#4682B4', accent: '#1E4D6B', name: 'Metal' }, // Metal
+            { main: '#006400', accent: '#003200', name: 'Hedge' }  // Hedge
+        ];
+        
+        // Floor and ceiling colors
+        const floorColor = { main: '#333333', accent: '#222222', name: 'Floor' };
+        const ceilingColor = { main: '#555555', accent: '#444444', name: 'Ceiling' };
+
+        // Brick wall pattern
+        function createBrickTexture(ctx, color) {
+            const { main, accent } = color;
+            
+            // Background
+            ctx.fillStyle = main;
+            ctx.fillRect(0, 0, texSize, texSize);
+            
+            // Draw bricks
+            ctx.fillStyle = accent;
+            
+            // Horizontal lines (mortar)
+            const brickHeight = texSize / 16;
+            const mortarHeight = Math.max(2, texSize / 64);
+            
+            for (let y = 0; y < texSize; y += brickHeight) {
+                ctx.fillRect(0, y, texSize, mortarHeight);
+            }
+            
+            // Vertical lines (brick edges)
+            const brickWidth = texSize / 4;
+            const edgeWidth = Math.max(2, texSize / 64);
+            
+            for (let x = 0; x < texSize; x += brickWidth) {
+                for (let y = 0; y < texSize; y += brickHeight * 2) {
+                    ctx.fillRect(x, y + mortarHeight, edgeWidth, brickHeight - mortarHeight);
+                    ctx.fillRect(x + brickWidth/2, y + brickHeight + mortarHeight, edgeWidth, brickHeight - mortarHeight);
+                }
+            }
+        }
+
+        // Stone wall pattern
+        function createStoneTexture(ctx, color) {
+            const { main, accent } = color;
+            
+            // Background
+            ctx.fillStyle = main;
+            ctx.fillRect(0, 0, texSize, texSize);
+            
+            // Draw stone pattern
+            ctx.fillStyle = accent;
+            
+            // Calculate stone block sizes based on texture size
+            const blockScale = texSize / 64;
+            
+            // Irregular stone blocks - scaled based on texture size
+            const blocks = [
+                [0, 0, 16 * blockScale, 16 * blockScale], 
+                [16 * blockScale, 0, 32 * blockScale, 16 * blockScale], 
+                [48 * blockScale, 0, 16 * blockScale, 32 * blockScale],
+                [0, 16 * blockScale, 32 * blockScale, 32 * blockScale], 
+                [32 * blockScale, 16 * blockScale, 16 * blockScale, 16 * blockScale], 
+                [32 * blockScale, 32 * blockScale, 32 * blockScale, 32 * blockScale],
+                [0, 48 * blockScale, 16 * blockScale, 16 * blockScale], 
+                [16 * blockScale, 48 * blockScale, 16 * blockScale, 16 * blockScale], 
+                [32 * blockScale, 48 * blockScale, 16 * blockScale, 16 * blockScale], 
+                [48 * blockScale, 48 * blockScale, 16 * blockScale, 16 * blockScale]
+            ];
+            
+            // Draw cracks between blocks
+            const crackWidth = Math.max(2, Math.floor(texSize / 64));
+            blocks.forEach(([x, y, w, h]) => {
+                ctx.strokeStyle = accent;
+                ctx.lineWidth = crackWidth;
+                ctx.strokeRect(x, y, w, h);
+            });
+            
+            // Add some texture noise - scale based on texture size
+            const noiseCount = Math.floor(100 * (texSize / 64) * (texSize / 64));
+            const noiseSize = Math.max(2, Math.floor(texSize / 64));
+            
+            for (let i = 0; i < noiseCount; i++) {
+                const x = Math.floor(Math.random() * texSize);
+                const y = Math.floor(Math.random() * texSize);
+                ctx.fillRect(x, y, noiseSize, noiseSize);
+            }
+        }
+
+        // Wood texture
+        function createWoodTexture(ctx, color) {
+            const { main, accent } = color;
+            
+            // Background
+            ctx.fillStyle = main;
+            ctx.fillRect(0, 0, texSize, texSize);
+            
+            // Draw wood grain
+            ctx.fillStyle = accent;
+            
+            // Scale for texture size
+            const plankWidth = texSize / 4;
+            const grainLineWidth = Math.max(1, Math.floor(texSize / 128));
+            const horizontalDetailHeight = Math.max(2, Math.floor(texSize / 64));
+            
+            // Vertical planks
+            for (let x = 0; x < texSize; x += plankWidth) {
+                ctx.fillRect(x, 0, grainLineWidth, texSize);
+                
+                // Wood grain lines
+                const grainCount = 5 + Math.floor(5 * (texSize / 64));
+                for (let i = 0; i < grainCount; i++) {
+                    const maxOffset = plankWidth * 0.6;
+                    const xOffset = x + (plankWidth * 0.1) + Math.floor(Math.random() * maxOffset);
+                    ctx.fillRect(xOffset, 0, grainLineWidth, texSize);
+                }
+            }
+            
+            // Horizontal details - knots and grain breaks
+            for (let y = 0; y < texSize; y += texSize / 4) {
+                ctx.fillRect(0, y, texSize, horizontalDetailHeight);
+            }
+        }
+
+        // Metal texture
+        function createMetalTexture(ctx, color) {
+            const { main, accent } = color;
+            
+            // Background
+            ctx.fillStyle = main;
+            ctx.fillRect(0, 0, texSize, texSize);
+            
+            // Draw metal pattern
+            ctx.fillStyle = accent;
+            
+            // Scale for texture size
+            const rivetSpacing = texSize / 8;
+            const rivetRadius = texSize / 24;
+            const divisionThickness = Math.max(2, Math.floor(texSize / 64));
+            
+            // Rivets
+            for (let x = rivetSpacing/2; x < texSize; x += rivetSpacing) {
+                for (let y = rivetSpacing/2; y < texSize; y += rivetSpacing) {
+                    ctx.beginPath();
+                    ctx.arc(x, y, rivetRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // Metal plate divisions
+            ctx.fillRect(0, texSize / 2, texSize, divisionThickness);
+            ctx.fillRect(texSize / 2, 0, divisionThickness, texSize);
+            
+            // Scratches - scaled for texture size
+            const scratchCount = Math.floor(20 * (texSize / 64));
+            for (let i = 0; i < scratchCount; i++) {
+                const x = Math.floor(Math.random() * texSize);
+                const y = Math.floor(Math.random() * texSize);
+                const length = (texSize / 12) + Math.floor(Math.random() * (texSize / 4));
+                const angle = Math.random() * Math.PI;
+                
+                const thickness = Math.max(1, Math.floor(texSize / 128));
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
+                ctx.fillRect(0, 0, length, thickness);
+                ctx.restore();
+            }
+        }
+
+        // Hedge/foliage texture
+        function createHedgeTexture(ctx, color) {
+            const { main, accent } = color;
+            
+            // Background
+            ctx.fillStyle = main;
+            ctx.fillRect(0, 0, texSize, texSize);
+            
+            // Draw leaf pattern
+            ctx.fillStyle = accent;
+            
+            // Scale for texture size
+            const smallLeafCount = Math.floor(100 * (texSize / 64) * (texSize / 64));
+            const smallLeafMinSize = Math.max(2, Math.floor(texSize / 64));
+            const smallLeafMaxAdd = Math.floor(texSize / 16);
+            
+            // Small leaf clusters
+            for (let i = 0; i < smallLeafCount; i++) {
+                const x = Math.floor(Math.random() * texSize);
+                const y = Math.floor(Math.random() * texSize);
+                const size = smallLeafMinSize + Math.floor(Math.random() * smallLeafMaxAdd);
+                
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Larger leaf shapes
+            const largeLeafCount = Math.floor(20 * (texSize / 64));
+            const ellipseWidth = texSize / 12;
+            const ellipseHeight = texSize / 16;
+            
+            for (let i = 0; i < largeLeafCount; i++) {
+                const x = Math.floor(Math.random() * texSize);
+                const y = Math.floor(Math.random() * texSize);
+                
+                ctx.beginPath();
+                ctx.ellipse(x, y, ellipseWidth, ellipseHeight, Math.random() * Math.PI, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        /**
+         * Create floor texture pattern
+         */
+        function createFloorTexture(ctx, color) {
+            const { main, accent } = color;
+            
+            // Background
+            ctx.fillStyle = main;
+            ctx.fillRect(0, 0, texSize, texSize);
+            
+            // Create tile pattern
+            const tileSize = texSize / 8; // 8x8 tiles
+            
+            // Draw tiles
+            for (let y = 0; y < texSize; y += tileSize) {
+                for (let x = 0; x < texSize; x += tileSize) {
+                    // Alternate tiles for checkerboard effect
+                    if ((x / tileSize + y / tileSize) % 2 === 0) {
+                        ctx.fillStyle = accent;
+                        ctx.fillRect(x, y, tileSize, tileSize);
+                    }
+                    
+                    // Draw tile borders
+                    ctx.strokeStyle = accent;
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(x, y, tileSize, tileSize);
+                }
+            }
+            
+            // Add some subtle noise for texture
+            const noiseCount = 500;
+            const noiseSize = 1;
+            ctx.fillStyle = accent;
+            for (let i = 0; i < noiseCount; i++) {
+                const x = Math.floor(Math.random() * texSize);
+                const y = Math.floor(Math.random() * texSize);
+                ctx.fillRect(x, y, noiseSize, noiseSize);
+            }
+        }
+        
+        /**
+         * Create ceiling texture pattern
+         */
+        function createCeilingTexture(ctx, color) {
+            const { main, accent } = color;
+            
+            // Background
+            ctx.fillStyle = main;
+            ctx.fillRect(0, 0, texSize, texSize);
+            
+            // Draw ceiling panels
+            const panelSize = texSize / 4; // 4x4 panels
+            
+            // Draw panels
+            for (let y = 0; y < texSize; y += panelSize) {
+                for (let x = 0; x < texSize; x += panelSize) {
+                    // Draw panel borders
+                    ctx.strokeStyle = accent;
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x + 2, y + 2, panelSize - 4, panelSize - 4);
+                    
+                    // Add some detail to each panel
+                    ctx.beginPath();
+                    ctx.moveTo(x + panelSize/2, y + 5);
+                    ctx.lineTo(x + panelSize/2, y + panelSize - 5);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(x + 5, y + panelSize/2);
+                    ctx.lineTo(x + panelSize - 5, y + panelSize/2);
+                    ctx.stroke();
+                }
+            }
+            
+            // Add some subtle noise for texture
+            const noiseCount = 300;
+            const noiseSize = 1;
+            ctx.fillStyle = accent;
+            for (let i = 0; i < noiseCount; i++) {
+                const x = Math.floor(Math.random() * texSize);
+                const y = Math.floor(Math.random() * texSize);
+                ctx.fillRect(x, y, noiseSize, noiseSize);
+            }
+        }
+
+        // Generate textures
+        function generateTextures() {
+            const container = document.getElementById('texturesContainer');
+            container.innerHTML = ''; // Clear previous textures
+            
+            const wallPatterns = [
+                createBrickTexture,
+                createStoneTexture,
+                createWoodTexture,
+                createMetalTexture,
+                createHedgeTexture
+            ];
+            
+            // Generate wall textures
+            for (let i = 0; i < wallTypes; i++) {
+                // Create texture wrapper div
+                const textureDiv = document.createElement('div');
+                textureDiv.className = 'texture';
+                
+                // Create canvas for this texture
+                const canvas = document.createElement('canvas');
+                canvas.width = texSize;
+                canvas.height = texSize;
+                canvas.id = `texture${i+1}`;
+                
+                // Generate texture on canvas
+                const ctx = canvas.getContext('2d');
+                wallPatterns[i](ctx, colors[i]);
+                
+                // Create filename label
+                const label = document.createElement('p');
+                label.textContent = `wall${i+1}.png (${colors[i].name})`;
+                
+                // Add canvas and label to texture div
+                textureDiv.appendChild(canvas);
+                textureDiv.appendChild(label);
+                
+                // Add texture div to container
+                container.appendChild(textureDiv);
+            }
+            
+            // Generate floor texture
+            const floorTextureDiv = document.createElement('div');
+            floorTextureDiv.className = 'texture';
+            
+            const floorCanvas = document.createElement('canvas');
+            floorCanvas.width = texSize;
+            floorCanvas.height = texSize;
+            floorCanvas.id = 'floorTexture';
+            
+            const floorCtx = floorCanvas.getContext('2d');
+            createFloorTexture(floorCtx, floorColor);
+            
+            const floorLabel = document.createElement('p');
+            floorLabel.textContent = `floor.png (Floor)`;
+            
+            floorTextureDiv.appendChild(floorCanvas);
+            floorTextureDiv.appendChild(floorLabel);
+            container.appendChild(floorTextureDiv);
+            
+            // Generate ceiling texture
+            const ceilingTextureDiv = document.createElement('div');
+            ceilingTextureDiv.className = 'texture';
+            
+            const ceilingCanvas = document.createElement('canvas');
+            ceilingCanvas.width = texSize;
+            ceilingCanvas.height = texSize;
+            ceilingCanvas.id = 'ceilingTexture';
+            
+            const ceilingCtx = ceilingCanvas.getContext('2d');
+            createCeilingTexture(ceilingCtx, ceilingColor);
+            
+            const ceilingLabel = document.createElement('p');
+            ceilingLabel.textContent = `ceiling.png (Ceiling)`;
+            
+            ceilingTextureDiv.appendChild(ceilingCanvas);
+            ceilingTextureDiv.appendChild(ceilingLabel);
+            container.appendChild(ceilingTextureDiv);
+        }
+
+        // Add event listener to generate button
+        document.getElementById('generateBtn').addEventListener('click', generateTextures);
+    </script>
+</body>
+</html>

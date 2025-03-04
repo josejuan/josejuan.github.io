@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Raycasting Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #backgroundCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        h1 {
+            font-size: 3em;
+            color: #880000;
+            text-shadow: 0 0 10px #ff0000;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+        
+        canvas {
+            border: 1px solid #333;
+            image-rendering: pixelated;
+            display: none;
+        }
+        
+        #titleScreen {
+            text-align: center;
+            width: 640px;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border: 1px solid #880000;
+            border-radius: 5px;
+        }
+        
+        .map-selection {
+            margin-bottom: 30px;
+        }
+        
+        .map-selection h2, .instructions h2 {
+            color: #aa0000;
+            margin-bottom: 10px;
+        }
+        
+        .instructions {
+            text-align: left;
+            margin: 0 auto;
+            width: 70%;
+        }
+        
+        .instructions ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .instructions li {
+            margin: 8px 0;
+        }
+        
+        select, button {
+            background-color: #222;
+            color: #fff;
+            border: 1px solid #880000;
+            padding: 8px 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1em;
+            margin: 5px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #880000;
+        }
+        
+        .game-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="backgroundCanvas"></canvas>
+    
+    <div id="titleScreen">
+        <h1>RAYCASTER</h1>
+        <p class="subtitle">A Wolfenstein 3D-inspired game</p>
+        
+        <div class="map-selection">
+            <h2>Select Map</h2>
+            <select id="mapSelector">
+                <option value="map1">Map 1: Simple Room</option>
+                <option value="map2">Map 2: Maze</option>
+                <option value="map3">Map 3: Castle</option>
+                <option value="map4">Map 4: Corridors</option>
+                <option value="map5">Map 5: Labyrinth</option>
+            </select>
+            <button id="startGame">Start Game</button>
+        </div>
+        
+        <div class="instructions">
+            <h2>Instructions</h2>
+            <ul>
+                <li><strong>↑</strong> Move forward</li>
+                <li><strong>↓</strong> Move backward</li>
+                <li><strong>←</strong> Turn left</li>
+                <li><strong>→</strong> Turn right</li>
+                <li><strong>ESC</strong> Return to title screen</li>
+            </ul>
+        </div>
+    </div>
+    
+    <canvas id="gameCanvas" width="640" height="480"></canvas>
+    
+    <div class="game-overlay">
+        <button id="backToTitle">Return to Title</button>
+    </div>
+
+    <script src="src/background.js"></script>
+    <script src="src/raycaster.js"></script>
+    <script src="src/player.js"></script>
+    <script src="src/map.js"></script>
+    <script src="src/game.js"></script>
+</body>
+</html>
