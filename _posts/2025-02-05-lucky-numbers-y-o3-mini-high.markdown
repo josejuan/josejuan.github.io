@@ -133,3 +133,18 @@ $ time -f "%e, %M" ./o3.64.2.2 500000000 > /dev/null
 $ time -f "%e, %M" ./o3.64.2.2 100000000 > /dev/null
 9.92, 398200
 ```
+
+## Actualización 2025-03-01
+
+Como siempre la cabeza insatisfecha, incapaz de encontrar alguna propiedad interesante que explotar, se conforma con arañar ciclos y ciclos... sugerí <a href="https://oeis.org/A000959">publicar en OEIS</a> una versión mucho más eficiente que hace uso de una jerarquía de árboles de Fenwick y bitmaps a nivel de palabra (64 bits), reduciendo a casi 1 bit por número y mejorando la afinidad de caché. Por supuesto todo ello con la ayuda de _J. Bille, I. Larsen, I. L. Gørtz, et al. “Succinct Partial Sums and Fenwick Trees.” ESA 2017_ y creo que fue `o3`.
+
+Por comparar, ahora los tiempos anteriores son:
+
+```bash
+$ time -f "%e, %M" ./oo3.c.exec 1000000000 > /dev/null
+71.02, 97928
+$ time -f "%e, %M" ./oo3.c.exec 500000000 > /dev/null
+29.62, 52124
+$ time -f "%e, %M" ./oo3.c.exec 100000000 > /dev/null
+3.69, 15472
+```
