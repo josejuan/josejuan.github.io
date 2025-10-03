@@ -1,0 +1,37 @@
+---
+layout: post
+title: T800 Hand
+author: josejuan
+categories: robotica
+---
+
+## T800 Hand
+
+Continuando con algunas formas de matar el aburrimiento, ¿qué tal de fácil es hacer una mano
+robótica **completamente desde cero**?
+
+![img.png](../../../../images/t800-hand.png)
+
+Como suele pasar, pensar en uniones, engranajes, servos, electrónica, programación, ... es todo
+bastante fácil. En este caso la mecánica ha funcionado como se esperaba, y la electrónica y programación
+resultan muy fáciles.
+
+Un **ESP8264** para solo tener que alimentar los servos y micro y poder controlar por Wifi sin host.
+
+## Las gomas
+
+Curiosamente, lo que más quebraderos de cabeza me ha dado son las gomas tensoras de detrás de cada unión
+en los dedos. Parecía que cualquier gomita de éstas para el pelo iban a servir ¡y sirven!... durante unos
+minutos *xD*
+
+Las gomas normales pierden elasticidad, se cuartean, se secan, etc... un desastre. Al final unas gomas
+que en realidad son juntas tóricas de caucho de nitrilo resistentes a la corrosión están haciendo el
+trabajo, pero aún así no son ideales.
+
+De nuevo, los mayores problemas vienen de elementos que uno en su ignorancia ni imaginaba *xD*
+
+## El engendro
+
+Bueno, y aquí está:
+
+<video src="../../../../images/t800-hand.mp4" controls></video>
