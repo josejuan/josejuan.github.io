@@ -35,3 +35,16 @@ De nuevo, los mayores problemas vienen de elementos que uno en su ignorancia ni 
 Bueno, y aquí está:
 
 <video src="../../../../images/t800-hand.mp4" controls></video>
+
+## Precio
+
+El precio de materiales más o menos:
+
+1. en PLA yo creo que como medio kilo, así que unos 10€
+2. 4 servos micro 9G poco más de 1€ cada uno, pues 4€
+3. el ESP8266 ha salido por 2,55€
+4. la fuente de alimentación USB 5V 3A han sido 3,5€
+5. las malditas gomas tóricas, 1,5€, claro, las puestas son solo 12.
+5. y bueno, una placa de puntos para soldar, cables, ... no se, menos de 5€ seguro
+
+Total, por unos **25€** más o menos ha salido la mano robótica hecha desde cero **:)**
