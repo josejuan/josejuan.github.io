@@ -10,7 +10,7 @@ categories: robotica
 Continuando con algunas formas de matar el aburrimiento, ¿qué tal de fácil es hacer una mano
 robótica **completamente desde cero**?
 
-![img.png](../../../../images/t800-hand.png)
+![img.png](/images/t800-hand.png)
 
 Como suele pasar, pensar en uniones, engranajes, servos, electrónica, programación, ... es todo
 bastante fácil. En este caso la mecánica ha funcionado como se esperaba, y la electrónica y programación
@@ -34,7 +34,10 @@ De nuevo, los mayores problemas vienen de elementos que uno en su ignorancia ni 
 
 Bueno, y aquí está:
 
-<video src="../../../../images/t800-hand.mp4" controls></video>
+<video width="640" controls preload="metadata">
+  <source src="/images/t800-hand.mp4" type="video/mp4">
+  Tu navegador no soporta el elemento video.
+</video>
 
 ## Precio
 

@@ -71,6 +71,7 @@ Nota: anota y ten en cuenta todas las dependencias externas que pueda tener (bas
 
 Usa algo para que se construya tu entregable y mételo en algún sitio para que se construya. Los *Action* de *github* son un buen sitio:
 
+{% raw %}
 ```yaml
 name: my app
 
@@ -98,6 +99,7 @@ jobs:
         run: mvn -B -q clean package --file java/pom.xml
 ...
 ```
+{% endraw %}
 
 Vale, ya se construye automáticamente cuando alguien *pushea* en las ramas importantes.
 

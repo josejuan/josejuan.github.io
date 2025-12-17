@@ -1,0 +1,46 @@
+// Clases de utilidad para colores de texto
+.text-red { color: #e74c3c; }
+.text-blue { color: #3498db; }
+.text-green { color: #2ecc71; }
+.text-orange { color: #e67e22; }
+.text-purple { color: #9b59b6; }
+.text-gray { color: #95a5a6; }
+.text-dark { color: #2c3e50; }
+
+// Fondos de color
+.bg-yellow { background-color: #fff3cd; padding: 0.2em 0.4em; }
+.bg-red { background-color: #f8d7da; padding: 0.2em 0.4em; }
+.bg-blue { background-color: #d1ecf1; padding: 0.2em 0.4em; }
+.bg-green { background-color: #d4edda; padding: 0.2em 0.4em; }
+
+// Cajas de alerta/nota
+.alert {
+  padding: 1em;
+  margin: 1em 0;
+  border-radius: 4px;
+  border-left: 4px solid;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  border-color: #3498db;
+  color: #0c5460;
+}
+
+.alert-warning {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  border-color: #e74c3c;
+  color: #721c24;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  border-color: #2ecc71;
+  color: #155724;
+}
