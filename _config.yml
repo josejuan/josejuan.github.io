@@ -40,6 +40,9 @@ plugins:
 keep_files:
   - images
 
+kramdown:
+  toc_levels: 2..3
+
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to
