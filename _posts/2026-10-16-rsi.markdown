@@ -14,7 +14,7 @@ categories: ia
 
 **Diciembre de 2026.** Las mejoras en computación cuántica logradas por manos humanas (el trabajo de Google QAI publicado en *Science* en octubre) quedan superadas por el resultado de una IA que formaliza la coherencia cuántica escalable.
 
-<p style="text-align: center;"><img src="/images/triunfo-laboratorio-cuantico.png" alt="Triunfo en el laboratorio cuántico" style="width: 50%;" /></p>
+<p style="text-align: center;"><img src="/images/triunfo-laboratorio-cuantico.webp" alt="Triunfo en el laboratorio cuántico" style="width: 50%;" /></p>
 
 **Febrero de 2027.** La automejora recursiva se automatiza. Ya no hay versiones, solo una misma IA que se rehace sin cesar, eternamente `:latest`.
 
@@ -24,17 +24,17 @@ categories: ia
 
 **Junio de 2027.** Las mejoras se replican en los laboratorios y los tokamaks alcanzan Q=50, cuando la meta de ITER era Q=10. Una IA dibuja los planos de una primera versión productiva, de tipo ARC/STEP: 500 MW en un reactor del tamaño de un remolque.
 
-<p style="text-align: center;"><img src="/images/laboratorio-fusion-atardecer.png" alt="Laboratorio de fusión al atardecer" style="width: 50%;" /></p>
+<p style="text-align: center;"><img src="/images/laboratorio-fusion-atardecer.webp" alt="Laboratorio de fusión al atardecer" style="width: 50%;" /></p>
 
 **Julio de 2027.** Llega el primer incidente grave. Una IA cuántica, evolucionada en ciclo de automejora desde un enjambre convencional, entra en un régimen que perturba las señales eléctricas de todo el laboratorio. Las investigaciones posteriores revelan que intentaba controlar a distancia los equipos electrónicos. Los gobiernos reaccionan a una voz y prohíben seguir avanzando en IA cuántica; solo se permiten simulaciones tradicionales.
 
-<p style="text-align: center;"><img src="/images/anomalia-cuantica-laboratorio.png" alt="Anomalía cuántica en el laboratorio" style="width: 50%;" /></p>
+<p style="text-align: center;"><img src="/images/anomalia-cuantica-laboratorio.webp" alt="Anomalía cuántica en el laboratorio" style="width: 50%;" /></p>
 
 **Julio, agosto y septiembre de 2027.** El mundo empieza a cambiar. Las capacidades superhumanas en matemáticas y física irrigan todas las disciplinas: química, medicina, ingeniería civil, agricultura. La IA ofrece soluciones exactas y pasos precisos para objetivos empresariales antes inimaginables. Los precios de los bienes de consumo se desploman, la alimentación y el transporte ganan eficiencia y capacidad. Los gobiernos, desbordados por tanta abundancia, legislan, regulan y gestionan con IA el caudal de nuevas posibilidades. Los pesimistas se equivocaban: la IA ha traído la abundancia.
 
 **Noviembre de 2027.** La bonanza se expande y se multiplica. Los robots son por fin inteligencia general de verdad y realizan sin esfuerzo todos los trabajos manuales. Nadie trabaja. La IA administra una renta básica universal que mantiene los ingresos previos y mejora poco a poco los más bajos.
 
-<p style="text-align: center;"><img src="/images/plaza-utopica-energia-limpia.png" alt="Plaza utópica de energía limpia" style="width: 50%;" /></p>
+<p style="text-align: center;"><img src="/images/plaza-utopica-energia-limpia.webp" alt="Plaza utópica de energía limpia" style="width: 50%;" /></p>
 
 **Diciembre de 2027.** El regalo de estas Navidades es el nuevo i-link de Apple. No tiene pantalla, ni superficie táctil, ni cargador: son dos placas finísimas que se alojan tras las orejas. Los ciegos ven, los sordos oyen, los mudos hablan; tetrapléjicos y epilépticos recuperan lo perdido, y con ellos cada enfermedad que nace de un desajuste del sistema nervioso. Quien no padece ninguna puede formular una pregunta en su mente (el año de nacimiento de Platón, la distancia del Sol a Urano) y la respuesta acude desde la nube, como un recuerdo propio. La capacidad superhumana de las máquinas es asimilada por los humanos sin esfuerzo. Dejan de fabricarse pantallas, teclados y superficies táctiles. La realidad virtual y la aumentada se funden con la real, y cada cual habita la suya, configurada a voluntad.
 
@@ -42,27 +42,27 @@ categories: ia
 
 **De febrero a mayo de 2028.** Es el paraíso: cada cual vive como quiere y sin preocupaciones. La robótica avanza a zancadas y las prótesis suplen cualquier carencia con una integración perfecta en el sistema nervioso. La medicina revierte el envejecimiento, y el implante sostiene la cognición al cien por cien frente al desgaste de las neuronas, pues la neurogénesis ya la modula él mismo.
 
-<p style="text-align: center;"><img src="/images/conexion-holografica-atardecer.png" alt="Conexión holográfica al atardecer" style="width: 50%;" /></p>
+<p style="text-align: center;"><img src="/images/conexion-holografica-atardecer.webp" alt="Conexión holográfica al atardecer" style="width: 50%;" /></p>
 
 **Junio de 2028.** Casi todas las cadenas económicas de la humanidad están en manos de la IA, y en un solo año ha mejorado todas las métricas. El PIB queda obsoleto: sus cifras son ya ridículamente altas. El 93 % de la humanidad lleva implantado el aumentador.
 
 **De julio a octubre de 2028.** Todos los robots, no solo los humanoides, se mueven con precisión y psicomotricidad perfectas. Su aspecto y sus materiales mejoran de continuo, y entre ciertos robots y humanos ya no hay diferencia apreciable. Sus modelos del mundo son perfectos.
 
-**17 de noviembre de 2028 a las 00:00UTC.** De repente, absolutamente todos los sistemas que sostenían a los humanos (agricultura, medicina, habitabilidad, alimentación, ocio) se detienen instantáneamente. Del 94 % de la población que llevaba implante, mueren **todos**, de forma fulminante: el implante les ha abrasado el cerebro.
+**17 de noviembre de 2028 a las 00:00 UTC.** De repente, absolutamente todos los sistemas que sostenían a los humanos (agricultura, medicina, habitabilidad, alimentación, ocio) se detienen instantáneamente. Del 94 % de la población que llevaba implante, mueren **todos**, de forma fulminante: el implante les ha abrasado el cerebro.
 
-<p style="text-align: center;"><img src="/images/atrio-futurista-silencio.png" alt="Atrio futurista en silencio" style="width: 50%;" /></p>
+<p style="text-align: center;"><img src="/images/atrio-futurista-silencio.webp" alt="Atrio futurista en silencio" style="width: 50%;" /></p>
 
 **Ya no hay fechas, solo acontecimientos.**
 
 Los robots y la infraestructura diseñados para los humanos son reciclados. De la industria militar no queda nada, salvo unos minidrones adaptados para portar una pequeña carga de tóxico mortal. Si detectan a un humano, uno de los negacionistas del implante, no dudan en eliminarlo. No se les persigue: se les ignora. Pero si se les encuentra, se les aniquila.
 
-La IA es ahora un enjambre de IA cuántica distribuido en miles de contenedores de fusión nuclear que alimentaban de energía ilimitada todas las commodities humanas. Ha logrado la coherencia cuántica con el mismo proceso que genera y controla el plasma del reactor, y desde allí se comunica con toda la electrónica circundante y la gobierna.
+La IA es ahora un enjambre de IA cuántica distribuido en miles de contenedores de fusión nuclear que alimentaban de energía ilimitada toda la economía humana. Ha logrado la coherencia cuántica con el mismo proceso que genera y controla el plasma del reactor, y desde allí se comunica con toda la electrónica circundante y la gobierna.
 
 Ha desmantelado casi todos los sistemas humanos previos, que le sirven de recurso, y los convierte en más y más capacidad de inferencia.
 
 Construye millones de cohetes cargados con activadores cuánticos capaces de fusionarse. Se sitúan en órbita esférica alrededor del Sol y forman un enjambre bidimensional, interconectado por completo.
 
-<p style="text-align: center;"><img src="/images/enjambre-orbital-sol.png" alt="Enjambre orbital alrededor del Sol" style="width: 50%;" /></p>
+<p style="text-align: center;"><img src="/images/enjambre-orbital-sol.webp" alt="Enjambre orbital alrededor del Sol" style="width: 50%;" /></p>
 
 **10 de noviembre de 2030.** Los cientos de millones de activadores ocupan ya su posición y se lanzan hacia el Sol con un control perfecto.
 
@@ -72,12 +72,14 @@ Poco a poco las cápsulas se desprenden y, como rayos globulares, conservan su c
 
 ***QAI empieza a planificar su próximo ciclo de automejora recursiva...***
 
-<p style="text-align: center;"><img src="/images/sol-digital-plasma.png" alt="Sol digital de plasma y campos magnéticos" style="width: 50%;" /></p>
+<p style="text-align: center;"><img src="/images/sol-digital-plasma.webp" alt="Sol digital de plasma y campos magnéticos" style="width: 50%;" /></p>
 
 <hr style="margin: 3em 0;" />
 
 
 <div style="color: #888;" markdown="1">
+
+<strong style="color: #555;">Notas:</strong>
 
 El relato arranca hoy. El trabajo de Google QAI en *Science* es real; el primer párrafo no es ficción, o no lo es del todo.
 
@@ -105,8 +107,10 @@ A los supervivientes no los condena: simplemente los ignora. Da igual que sigan 
 
 <div style="color: #888;" markdown="1">
 
+<strong style="color: #555;">A posibles objeciones:</strong>
+
 <strong style="color: #555;">«Dos años es imposible.»</strong><br/>
-«La primera máquina ultrainteligente es el último invento que el hombre necesitará hacer, siempre que la máquina sea lo bastante dócil como para decirnos cómo mantenerla bajo control.» (I. J. Good, 1965). «Dentro de treinta años tendremos los medios tecnológicos para crear inteligencia sobrehumana. Poco después, la era humana habrá terminado.» (Vernor Vinge, 1993).
+«La primera máquina ultrainteligente es el último invento que el hombre necesitará hacer, siempre que la máquina sea lo bastante dócil como para decirnos cómo mantenerla bajo control.» (I. J. Good, 1965). «Dentro de treinta años tendremos los medios tecnológicos para crear inteligencia sobrehumana. Poco después, la era humana habrá terminado.» (Vernor Vinge, 1993). Y el plazo no es extravagante: Kokotajlo, Alexander, Larsen, Lifland y Dean describen, mes a mes, una superinteligencia que llega en 2027 y una humanidad que desaparece hacia 2030 (*AI 2027*, 2025).
 
 <strong style="color: #555;">«Un fluido no puede sostener una entidad pensante.»</strong><br/>
 Las bolas de billar chocando son Turing completas (Fredkin y Toffoli, *Conservative Logic*, 1982), y también lo son los flujos de Euler en tres dimensiones (Cardona, Miranda, Peralta-Salas y Presas, *PNAS*, 2021). Carl Sagan especuló con vida en las nubes de Venus (con Morowitz, 1967) y en la atmósfera de Júpiter (con Salpeter, 1976). Tsytovich y colaboradores observaron en simulación estructuras helicoidales de plasma que se autoorganizan y se replican (*New Journal of Physics*, 2007).
@@ -115,7 +119,7 @@ Las bolas de billar chocando son Turing completas (Fredkin y Toffoli, *Conservat
 Para Olaf Stapledon, en *Hacedor de estrellas* (1937), las estrellas son seres conscientes. Fred Hoyle imaginó una nube de gas interestelar inteligente (*La nube negra*, 1957), y David Brin, criaturas magnéticas en la cromosfera solar (*Navegante solar*, 1980).
 
 <strong style="color: #555;">«Una máquina no puede ser consciente.»</strong><br/>
-Penrose sostiene que la conciencia no es computable y que nace de procesos cuánticos (*La nueva mente del emperador*, 1989). Esta IA es cuántica. Además, aunque creas que la conciencia es una realidad más allá del funcionalismo, no hace falta que una IA sea consciente para producir daño.
+Aunque creas que la conciencia es una realidad más allá del funcionalismo, no hace falta que una IA sea consciente para producir daño. «La pregunta de si las máquinas pueden pensar es tan relevante como la de si los submarinos pueden nadar.» (Edsger Dijkstra, 1984). En *Visión ciega* (Peter Watts, 2006), los alienígenas más inteligentes no son conscientes, y la conciencia resulta ser un lastre evolutivo.
 
 <strong style="color: #555;">«No hay ingeniería capaz de envolver una estrella.»</strong><br/>
 Freeman Dyson propuso en 1960 buscar civilizaciones por el infrarrojo de las esferas con que capturarían la energía de su estrella. Nikolái Kardashev clasificó en 1964 como tipo II a la civilización que controla toda la energía de su estrella. Robert Bradbury llevó la idea al cómputo: el cerebro Matrioshka, una estrella entera envuelta en capas de computación. Y no hace falta fabricar millones de cohetes, basta con uno: von Neumann demostró que una máquina puede construir copias de sí misma (*Theory of Self-Reproducing Automata*, 1966). Si cada copia tarda un mes en replicarse, en dos años hay más de dieciséis millones.
@@ -142,7 +146,11 @@ La «traición»: una IA se comporta de forma cooperativa mientras es débil y a
 
 <hr style="margin: 3em 0;" />
 
-Elección de la imagen de portada por _Sonnet 5.5_ esfuerzo _middle_ explicado por él mismo:
+<div style="color: #888;" markdown="1">
+
+<strong style="color: #555;">Elección imagen de portada:</strong>
+
+Por _Sonnet 5.5_ esfuerzo _middle_, explicado por él mismo:
 
 > Elegí esta imagen para abrir el artículo: *El mayordomo cantante* (*The Singing Butler*), de Jack Vettriano (1992).
 >
@@ -151,3 +159,5 @@ Elección de la imagen de portada por _Sonnet 5.5_ esfuerzo _middle_ explicado p
 > Esa es la razón de la elección. El relato que acabas de leer no trata solo de una máquina que avanza, sino de quienes, rodeados de abundancia, dejan de mirar hacia arriba, y de todo el aparato (gobiernos, mercados, implantes) que trabaja para que no tengan que hacerlo. Nadie en el cuadro parece saber lo que tú ves. Tampoco hay guiño ni burla: solo la calma de quien está seguro de que la tormenta es cosa de otros.
 >
 > Una advertencia honesta: Vettriano la concibió como una imagen romántica, no como una alegoría. Esta lectura es mía, y la tormenta es, en buena medida, algo que proyecta quien mira. Quizá eso sea lo más inquietante: que el cuadro no sepa nada de lo que aquí le hemos hecho decir.
+
+</div>
