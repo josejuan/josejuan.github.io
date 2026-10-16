@@ -1,0 +1,20 @@
+<style>
+  .post-content img:not(a img) { cursor: zoom-in; }
+  .lightbox { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center;
+              background: rgba(0, 0, 0, 0.9); cursor: zoom-out; }
+  .lightbox img { max-width: 95vw; max-height: 95vh; }
+</style>
+<script>
+  document.addEventListener("click", function (e) {
+    var img = e.target;
+    if (img.tagName !== "IMG" || !img.closest(".post-content") || img.closest("a")) return;
+    var box = document.createElement("div");
+    box.className = "lightbox";
+    box.innerHTML = '<img src="' + img.src + '" alt="">';
+    box.addEventListener("click", function () { box.remove(); });
+    document.addEventListener("keydown", function esc(k) {
+      if (k.key === "Escape") { box.remove(); document.removeEventListener("keydown", esc); }
+    });
+    document.body.appendChild(box);
+  });
+</script>
