@@ -9,6 +9,14 @@ categories: software deployment
 
 Un experimento completo con DeepSeek 4.1 Flash 1017 para probar el agent coding sobre Rust.
 
+- **Coste de infraestructura:** 5 €/mes.
+- **Coste de desarrollo:** 5 € de API oficial de DeepSeek.
+
+<figure style="margin: 0 0 2em 0;">
+  <img src="/images/swarm-deepseek-coste.png" alt="Consumo de la API oficial de DeepSeek durante el experimento" />
+  <figcaption style="text-align: center; color: #888; font-size: 0.9em; margin-top: 0.5em;">Consumo de la API oficial de DeepSeek durante el experimento</figcaption>
+</figure>
+
 ## Entregable final
 
 A partir de un único servidor «pelado», capacidad para:
