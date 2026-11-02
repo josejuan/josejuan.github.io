@@ -91,6 +91,11 @@ El código vive en Forgejo, servido desde el mismo bastión. La organización `s
   <figcaption style="text-align: center; color: #888; font-size: 0.9em; margin-top: 0.5em;">Puertos, ingress, URLs y versiones</figcaption>
 </figure>
 
+<figure style="margin: 0 0 2em 0;">
+  <img src="/images/swarm-apps-des-pro.png" alt="DES y PRO desplegados y listos de forma automática" />
+  <figcaption style="text-align: center; color: #888; font-size: 0.9em; margin-top: 0.5em;">DES y PRO desplegados y listos de forma automática</figcaption>
+</figure>
+
 ## swarm.agents
 
 `swarm.agents` es el intérprete de grafos de agentes. Un proyecto agrupa agentes y cada agente es un grafo que puede reutilizar otros agentes y delegar el trabajo largo en `swarm.runner`. Cada proyecto define así sus propios grafos, runners y condiciones, y recibe tareas desde fuera que serán ejecutadas.
